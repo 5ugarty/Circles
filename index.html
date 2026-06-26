@@ -320,6 +320,24 @@
     font-size: 13px; padding: 8px 16px; cursor: pointer; transition: border-color 0.15s, color 0.15s;
   }
   .detail-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── group dropdown ── */
+  .group-field-wrap { position: relative; }
+  .group-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface); border: 0.5px solid var(--border2);
+    border-radius: var(--radius); box-shadow: 0 4px 20px rgba(80,60,140,0.10);
+    z-index: 50; display: none; overflow: hidden;
+  }
+  .group-dropdown.open { display: block; }
+  .group-option {
+    padding: 10px 14px; font-size: 13.5px; color: var(--text2);
+    cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
+    transition: background 0.1s;
+  }
+  .group-option:hover { background: var(--surface2); color: var(--text); }
+  .group-option.new-option { color: var(--accent); border-top: 0.5px solid var(--border); }
+  .group-option.new-option:first-child { border-top: none; }
 </style>
 </head>
 <body>
@@ -392,9 +410,12 @@
       </div>
     </div>
     <div class="field">
-      <div class="field-label">그룹 <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:4px">Enter로 추가</span></div>
-      <div class="tag-input-wrap" id="group-wrap" onclick="document.getElementById('group-field').focus()">
-        <input type="text" id="group-field" class="chip-input" placeholder="가족, 학교, 회사…">
+      <div class="field-label">그룹</div>
+      <div class="group-field-wrap">
+        <div class="tag-input-wrap" id="group-wrap" onclick="document.getElementById('group-field').focus();showGroupDropdown()">
+          <input type="text" id="group-field" class="chip-input" placeholder="그룹 선택 또는 새로 입력…" autocomplete="off" oninput="showGroupDropdown()" onfocus="showGroupDropdown()">
+        </div>
+        <div class="group-dropdown" id="group-dropdown"></div>
       </div>
     </div>
     <div class="field">
@@ -661,13 +682,54 @@ document.getElementById('tag-field').addEventListener('keydown',e=>{
   if(e.key==='Backspace'&&!e.target.value&&tags.length){tags.pop();renderChips();}
 });
 document.getElementById('group-field').addEventListener('keydown',e=>{
-  if(e.key==='Enter'||e.key===','){
+  if(e.key==='Enter'){
     e.preventDefault();
-    const v=e.target.value.trim().replace(/,$/,'');
+    const v=e.target.value.trim();
     if(v&&!groups.includes(v)){groups.push(v);renderGroupChips();}
     e.target.value='';
+    hideGroupDropdown();
   }
   if(e.key==='Backspace'&&!e.target.value&&groups.length){groups.pop();renderGroupChips();}
+  if(e.key==='Escape'){hideGroupDropdown();}
+});
+
+function allGroups() {
+  const set = new Set();
+  people.forEach(p=>(p.groups||[]).forEach(g=>set.add(g)));
+  return [...set].sort((a,b)=>a.localeCompare(b,'ko'));
+}
+
+function showGroupDropdown() {
+  const q = document.getElementById('group-field').value.trim().toLowerCase();
+  const dd = document.getElementById('group-dropdown');
+  const all = allGroups().filter(g=>!groups.includes(g));
+  const filtered = q ? all.filter(g=>g.toLowerCase().includes(q)) : all;
+
+  const items = [];
+  filtered.forEach(g=>{
+    items.push(`<div class="group-option" onmousedown="addGroupFromDropdown('${g.replace(/'/g,"\'")}')"> ${g}</div>`);
+  });
+  if(q && !all.find(g=>g.toLowerCase()===q) && !groups.includes(q)) {
+    items.push(`<div class="group-option new-option" onmousedown="addGroupFromDropdown('${q.replace(/'/g,"\'")}')">+ '${q}' 새로 추가</div>`);
+  }
+
+  if(!items.length){hideGroupDropdown();return;}
+  dd.innerHTML = items.join('');
+  dd.classList.add('open');
+}
+
+function hideGroupDropdown() {
+  document.getElementById('group-dropdown').classList.remove('open');
+}
+
+function addGroupFromDropdown(g) {
+  if(!groups.includes(g)){groups.push(g);renderGroupChips();}
+  document.getElementById('group-field').value='';
+  hideGroupDropdown();
+}
+
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.group-field-wrap')) hideGroupDropdown();
 });
 
 function addMemo(label='',text='') {
