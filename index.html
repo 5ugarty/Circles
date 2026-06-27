@@ -162,9 +162,10 @@
   /* ── group view ── */
   .group-section { margin-bottom: 28px; }
   .group-header {
-    font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--accent);
-    padding: 0 0 8px; border-bottom: 0.5px solid var(--border2);
+    font-size: 15px; font-weight: 400; letter-spacing: -0.01em;
+    text-transform: none; color: var(--accent);
+    font-family: 'Noto Serif KR', serif;
+    padding: 0 0 10px; border-bottom: 0.5px solid var(--border2);
     margin-bottom: 10px;
   }
 
@@ -344,7 +345,11 @@
 <div class="shell">
   <header class="site-header">
     <h1 class="site-title">Circles<span>.</span></h1>
-    <p class="header-meta" id="today-label"></p>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span id="sync-status" style="font-size:12px;color:var(--text3);letter-spacing:0.04em">동기화 안 됨</span>
+      <button class="toolbar-btn" onclick="gistLoad()" style="font-size:12px;padding:6px 12px">☁ 불러오기</button>
+      <p class="header-meta" id="today-label"></p>
+    </div>
   </header>
 
   <div class="bday-banner" id="bday-banner"></div>
@@ -444,6 +449,85 @@
 </div>
 
 <script>
+const GITHUB_TOKEN = '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';
+const GIST_FILENAME = 'circles-data.json';
+let gistId = localStorage.getItem('circles_gist_id') || null;
+let syncStatus = 'idle'; // idle | syncing | ok | error
+
+async function gistSave() {
+  setSyncStatus('syncing');
+  const body = { files: { [GIST_FILENAME]: { content: JSON.stringify(people, null, 2) } } };
+  try {
+    let res;
+    if (gistId) {
+      res = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    } else {
+      res = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: { Authorization: `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, description: 'Circles — People & Notes data', public: false })
+      });
+      const data = await res.json();
+      gistId = data.id;
+      localStorage.setItem('circles_gist_id', gistId);
+    }
+    if (!res.ok) throw new Error();
+    setSyncStatus('ok');
+  } catch { setSyncStatus('error'); }
+}
+
+async function gistLoad() {
+  setSyncStatus('syncing');
+  try {
+    // gistId 없으면 목록에서 찾기
+    if (!gistId) {
+      const res = await fetch('https://api.github.com/gists?per_page=100', {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` }
+      });
+      const list = await res.json();
+      const found = list.find(g => g.files[GIST_FILENAME]);
+      if (found) {
+        gistId = found.id;
+        localStorage.setItem('circles_gist_id', gistId);
+      } else {
+        setSyncStatus('idle');
+        return;
+      }
+    }
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers: { Authorization: `token ${GITHUB_TOKEN}` }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const raw = data.files[GIST_FILENAME]?.content;
+    if (raw) {
+      people = JSON.parse(raw);
+      persist();
+      renderList();
+      renderBdayBanner();
+    }
+    setSyncStatus('ok');
+  } catch { setSyncStatus('error'); }
+}
+
+function setSyncStatus(s) {
+  syncStatus = s;
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const map = {
+    idle:    { text: '동기화 안 됨', color: 'var(--text3)' },
+    syncing: { text: '동기화 중…',  color: 'var(--accent)' },
+    ok:      { text: '✓ 동기화됨',  color: '#5a9e6a' },
+    error:   { text: '⚠ 오류',      color: 'var(--red)' }
+  };
+  el.textContent = map[s].text;
+  el.style.color = map[s].color;
+}
+
 const STORE = 'ppl_v1';
 let people = JSON.parse(localStorage.getItem(STORE) || '[]');
 let sortKey = 'name';
@@ -451,7 +535,7 @@ let editId = null;
 let tags = [];
 let groups = [];
 
-function persist() { localStorage.setItem(STORE, JSON.stringify(people)); }
+function persist() { localStorage.setItem(STORE, JSON.stringify(people)); gistSave(); }
 
 // ── 색상 팔레트 (아바타 없이 카드 배경 강조용으로만) ──
 const PALETTES = [
@@ -516,7 +600,7 @@ function cardHtml(p) {
     ? `<span style="font-size:11px;color:var(--accent)">${days===0?'🎂 오늘!':`D-${days}`}</span>` : '';
   const tagHtml = (p.tags||[]).map(t=>`<span class="tag-pill">${t}</span>`).join('');
   const mbtiHtml = p.mbti ? `<span class="mbti-badge">${p.mbti}</span>` : '';
-  const groupStr = (p.groups||[]).join(' · ');
+  const groupStr = sortKey !== 'group' ? (p.groups||[]).join(' · ') : '';
   const subParts = [bday, groupStr].filter(Boolean);
   const validMemos = (p.memos||[]).filter(m=>m.text);
   const preview = validMemos.length ? `<div class="card-memos">
@@ -807,6 +891,7 @@ document.getElementById('search').addEventListener('input',renderList);
 setTodayLabel();
 renderBdayBanner();
 renderList();
+gistLoad();
 </script>
 </body>
 </html>
