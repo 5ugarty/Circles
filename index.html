@@ -345,9 +345,8 @@
 <div class="shell">
   <header class="site-header">
     <h1 class="site-title">Circles<span>.</span></h1>
-    <div style="display:flex;align-items:center;gap:14px">
-      <span id="sync-status" style="font-size:12px;color:var(--text3);letter-spacing:0.04em">동기화 안 됨</span>
-      <button class="toolbar-btn" onclick="gistLoad()" style="font-size:12px;padding:6px 12px">☁ 불러오기</button>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="sync-status" style="font-size:12px;color:var(--text3);letter-spacing:0.04em"></span>
       <p class="header-meta" id="today-label"></p>
     </div>
   </header>
@@ -359,15 +358,24 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="search" placeholder="이름, 태그, 그룹, MBTI로 검색">
     </div>
-    <button class="toolbar-btn" onclick="exportData()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      내보내기
+    <button class="toolbar-btn" onclick="openSyncModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+      GITHUB GIST 동기화 설정
     </button>
+    <button class="toolbar-btn" onclick="gistSave()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      지금 업로드
+    </button>
+    <button class="toolbar-btn" onclick="gistLoad()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      지금 다운로드
+    </button>
+    <button class="toolbar-btn" onclick="exportData()">데이터 내보내기</button>
     <label class="toolbar-btn" style="cursor:pointer">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      불러오기
+      데이터 가져오기
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
     </label>
+    <button class="toolbar-btn" onclick="resetAll()" style="color:var(--red)">전체 데이터 초기화</button>
     <button class="toolbar-btn primary" onclick="openForm()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       추가
@@ -449,7 +457,7 @@
 </div>
 
 <script>
-const GITHUB_TOKEN = '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';
+let GITHUB_TOKEN = localStorage.getItem('circles_token') || '';
 const GIST_FILENAME = 'circles-data.json';
 let gistId = localStorage.getItem('circles_gist_id') || null;
 let syncStatus = 'idle'; // idle | syncing | ok | error
@@ -888,10 +896,82 @@ function overlayClick(e,id) {
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm();closeDetail();}});
 document.getElementById('search').addEventListener('input',renderList);
 
+
+// ── sync modal ──
+function openSyncModal() {
+  document.getElementById('sync-token').value = localStorage.getItem('circles_token') || '';
+  document.getElementById('sync-gist-id').value = localStorage.getItem('circles_gist_id') || '';
+  document.getElementById('sync-overlay').classList.add('open');
+}
+function closeSyncModal() {
+  document.getElementById('sync-overlay').classList.remove('open');
+}
+function saveSyncSettings() {
+  const token = document.getElementById('sync-token').value.trim();
+  const gid = document.getElementById('sync-gist-id').value.trim();
+  GITHUB_TOKEN = token;
+  localStorage.setItem('circles_token', token);
+  if (gid) { gistId = gid; localStorage.setItem('circles_gist_id', gid); }
+  else { gistId = null; localStorage.removeItem('circles_gist_id'); }
+  closeSyncModal();
+  setSyncStatus('idle');
+}
+async function testSync() {
+  const token = document.getElementById('sync-token').value.trim();
+  if (!token) { alert('토큰을 입력해 주세요.'); return; }
+  const btn = document.getElementById('test-btn');
+  btn.textContent = '테스트 중…'; btn.disabled = true;
+  try {
+    const res = await fetch('https://api.github.com/gists?per_page=1', {
+      headers: { Authorization: `token ${token}` }
+    });
+    if (res.ok) alert('✓ 연결 성공!');
+    else alert('⚠ 연결 실패. 토큰을 확인해 주세요.');
+  } catch { alert('⚠ 네트워크 오류'); }
+  btn.textContent = '연결 테스트'; btn.disabled = false;
+}
+
+// ── 전체 초기화 ──
+function resetAll() {
+  if (!confirm('모든 데이터를 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
+  people = [];
+  persist();
+  renderList();
+  renderBdayBanner();
+}
+
 setTodayLabel();
 renderBdayBanner();
 renderList();
 gistLoad();
 </script>
+
+<!-- sync modal -->
+<div class="overlay" id="sync-overlay" onclick="if(event.target===this)closeSyncModal()">
+  <div class="modal" style="max-width:480px" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <span class="modal-title">GitHub Gist 동기화</span>
+      <button class="icon-btn" onclick="closeSyncModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px">
+      GitHub Personal Access Token(gist 권한)을 입력하면 데이터가 Gist에 자동 저장돼요.<br>어떤 기기/브라우저에서 열어도 동일한 데이터를 쓸 수 있어요.
+    </p>
+    <div class="field">
+      <div class="field-label">GitHub Token</div>
+      <input type="password" id="sync-token" placeholder="ghp_xxxxxxxxxxxxxx">
+    </div>
+    <div class="field">
+      <div class="field-label">Gist ID <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:4px">처음이면 비워두세요 — 자동 생성</span></div>
+      <input type="text" id="sync-gist-id" placeholder="자동 생성">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeSyncModal()">취소</button>
+      <button class="btn-cancel" onclick="testSync()" id="test-btn">연결 테스트</button>
+      <button class="btn-save" onclick="saveSyncSettings()">저장</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
