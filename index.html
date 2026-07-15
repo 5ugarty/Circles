@@ -339,6 +339,66 @@
   .group-option:hover { background: var(--surface2); color: var(--text); }
   .group-option.new-option { color: var(--accent); border-top: 0.5px solid var(--border); }
   .group-option.new-option:first-child { border-top: none; }
+
+  /* ── 종료 관계 ── */
+  .view-tabs {
+    display: flex; gap: 0; margin-bottom: 0;
+    border-bottom: 0.5px solid var(--border2);
+  }
+  .view-tab {
+    background: none; border: none; color: var(--text3);
+    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 300;
+    padding: 10px 20px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -0.5px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 400; }
+  .view-tab.ended-tab.active { color: var(--text3); border-bottom-color: var(--text3); }
+  .view-tab:hover:not(.active) { color: var(--text2); }
+
+  .ended-badge {
+    display: inline-block; font-size: 10px; font-weight: 500;
+    background: var(--surface3); color: var(--text3);
+    border-radius: 4px; padding: 1px 6px; letter-spacing: 0.04em;
+    vertical-align: middle; margin-left: 4px;
+  }
+  .person-card.ended {
+    opacity: 0.65; border-style: dashed;
+  }
+  .btn-end-relation {
+    background: none; border: 0.5px solid var(--border2);
+    border-radius: var(--radius); color: var(--text3);
+    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
+    padding: 6px 14px; cursor: pointer; margin-top: 14px; display: inline-flex;
+    align-items: center; gap: 5px; transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-end-relation:hover { color: var(--red); border-color: var(--red); }
+  .btn-restore-relation {
+    background: none; border: 0.5px solid var(--border2);
+    border-radius: var(--radius); color: var(--text3);
+    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
+    padding: 6px 14px; cursor: pointer; margin-top: 14px; display: inline-flex;
+    align-items: center; gap: 5px; transition: color 0.15s, border-color 0.15s;
+  }
+  .btn-restore-relation:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* 그룹뷰 종료 버튼 */
+  .group-end-btn {
+    font-size: 11px; color: var(--text3); background: none; border: none;
+    cursor: pointer; padding: 2px 8px; border-radius: 6px;
+    border: 0.5px solid var(--border2); margin-left: 8px;
+    font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .group-end-btn:hover { color: var(--red); border-color: var(--red); }
+  .group-restore-btn {
+    font-size: 11px; color: var(--text3); background: none; border: none;
+    cursor: pointer; padding: 2px 8px; border-radius: 6px;
+    border: 0.5px solid var(--border2); margin-left: 8px;
+    font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .group-restore-btn:hover { color: var(--accent); border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -382,11 +442,18 @@
     </button>
   </div>
 
-  <div class="sort-tabs">
-    <button class="sort-tab active" onclick="setSort('name',this)">이름순</button>
-    <button class="sort-tab" onclick="setSort('bday',this)">생일순</button>
-    <button class="sort-tab" onclick="setSort('recent',this)">최근 추가순</button>
-    <button class="sort-tab" onclick="setSort('group',this)">그룹별</button>
+  <div class="view-tabs">
+    <button class="view-tab active" id="vtab-active" onclick="setView('active',this)">활성</button>
+    <button class="view-tab ended-tab" id="vtab-ended" onclick="setView('ended',this)">종료된 관계 <span class="ended-badge" id="ended-count">0</span></button>
+  </div>
+
+  <div id="sort-tabs-wrap">
+    <div class="sort-tabs" style="border-bottom:none;padding-top:12px;margin-bottom:8px">
+      <button class="sort-tab active" onclick="setSort('name',this)">이름순</button>
+      <button class="sort-tab" onclick="setSort('bday',this)">생일순</button>
+      <button class="sort-tab" onclick="setSort('recent',this)">최근 추가순</button>
+      <button class="sort-tab" onclick="setSort('group',this)">그룹별</button>
+    </div>
   </div>
 
   <p class="count-line" id="count-line"></p>
@@ -515,7 +582,7 @@ async function gistLoad() {
     if (raw) {
       people = JSON.parse(raw);
       persist();
-      renderList();
+      renderList(); updateEndedCount();
       renderBdayBanner();
     }
     setSyncStatus('ok');
@@ -539,6 +606,7 @@ function setSyncStatus(s) {
 const STORE = 'ppl_v1';
 let people = JSON.parse(localStorage.getItem(STORE) || '[]');
 let sortKey = 'name';
+let viewMode = 'active'; // 'active' | 'ended'
 let editId = null;
 let tags = [];
 let groups = [];
@@ -585,6 +653,42 @@ function renderBdayBanner() {
   banner.classList.add('show');
   banner.innerHTML = '🎂 &nbsp;' + soon.map(({p,days})=>
     `<strong>${p.name}</strong> 생일${days===0?' 오늘!':`까지 ${days}일`}`).join('&ensp;·&ensp;');
+}
+
+
+function setView(mode, el) {
+  viewMode = mode;
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  // 종료 뷰에서는 sort-tabs 숨기기
+  document.getElementById('sort-tabs-wrap').style.display = mode === 'ended' ? 'none' : '';
+  renderList();
+}
+
+function endRelation(id) {
+  const p = people.find(x=>x.id===id); if(!p) return;
+  p.ended = true;
+  persist(); closeDetail(); renderList(); renderBdayBanner(); updateEndedCount();
+}
+function restoreRelation(id) {
+  const p = people.find(x=>x.id===id); if(!p) return;
+  p.ended = false;
+  persist(); closeDetail(); renderList(); renderBdayBanner(); updateEndedCount();
+}
+function endGroup(groupName) {
+  if(!confirm(`'${groupName}' 그룹 전체를 종료된 관계로 이동할까요?`)) return;
+  people.forEach(p=>{ if((p.groups||[]).includes(groupName)) p.ended = true; });
+  persist(); renderList(); renderBdayBanner(); updateEndedCount();
+}
+function restoreGroup(groupName) {
+  if(!confirm(`'${groupName}' 그룹 전체를 활성 관계로 복원할까요?`)) return;
+  people.forEach(p=>{ if((p.groups||[]).includes(groupName)) p.ended = false; });
+  persist(); renderList(); renderBdayBanner(); updateEndedCount();
+}
+function updateEndedCount() {
+  const n = people.filter(p=>p.ended).length;
+  const el = document.getElementById('ended-count');
+  if(el) el.textContent = n;
 }
 
 function setSort(key, el) {
@@ -640,14 +744,19 @@ function cardHtml(p) {
 function renderList() {
   const q = document.getElementById('search').value.toLowerCase();
   const grid = document.getElementById('card-grid');
-  let filtered = people.filter(p=>
-    p.name.toLowerCase().includes(q) ||
-    (p.tags||[]).some(t=>t.toLowerCase().includes(q)) ||
-    (p.groups||[]).some(g=>g.toLowerCase().includes(q)) ||
-    (p.mbti||'').toLowerCase().includes(q)
-  );
+  let filtered = people.filter(p=>{
+    const matchView = viewMode === 'ended' ? !!p.ended : !p.ended;
+    const matchQ = p.name.toLowerCase().includes(q) ||
+      (p.tags||[]).some(t=>t.toLowerCase().includes(q)) ||
+      (p.groups||[]).some(g=>g.toLowerCase().includes(q)) ||
+      (p.mbti||'').toLowerCase().includes(q);
+    return matchView && matchQ;
+  });
   const sorted = sortedPeople(filtered);
-  document.getElementById('count-line').textContent = `${people.length}명 중 ${sorted.length}명`;
+  const activeCount = people.filter(p=>!p.ended).length;
+  const endedCount = people.filter(p=>p.ended).length;
+  document.getElementById('count-line').textContent = viewMode==='ended' ? `종료된 관계 ${sorted.length}명` : `${activeCount}명`;
+  updateEndedCount();
 
   if (!sorted.length) {
     grid.innerHTML = `<div class="empty">
@@ -668,11 +777,16 @@ function renderList() {
       if (a==='그룹 없음') return 1; if (b==='그룹 없음') return -1;
       return a.localeCompare(b,'ko');
     });
-    grid.innerHTML = order.map(g=>`
-      <div class="group-section">
-        <div class="group-header">${g} <span style="opacity:.55;font-weight:300">(${groupMap[g].length})</span></div>
+    grid.innerHTML = order.map(g=>{
+      const allEnded = groupMap[g].every(p=>p.ended);
+      const btnHtml = viewMode==='ended'
+        ? `<button class="group-restore-btn" onclick="event.stopPropagation();restoreGroup('${g.replace(/'/g,"\\'")}')">전체 복원</button>`
+        : `<button class="group-end-btn" onclick="event.stopPropagation();endGroup('${g.replace(/'/g,"\\'")}')">전체 종료</button>`;
+      return `<div class="group-section">
+        <div class="group-header">${g} <span style="opacity:.55;font-weight:300">(${groupMap[g].length})</span>${btnHtml}</div>
         <div style="display:flex;flex-direction:column;gap:8px">${groupMap[g].map(cardHtml).join('')}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } else {
     grid.innerHTML = sorted.map(cardHtml).join('');
   }
@@ -703,10 +817,16 @@ function openDetail(id) {
     <div class="detail-meta">${subParts.join(' · ')||'정보 없음'}</div>
     ${(p.tags||[]).length?`<div class="detail-tags">${p.tags.map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div>`:''}
     ${memosHtml||'<p style="font-size:13px;color:var(--text3);padding:12px 0">메모가 없어요</p>'}
-    <button class="detail-edit-btn" onclick="closeDetail();openForm('${id}')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      수정하기
-    </button>`;
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="detail-edit-btn" onclick="closeDetail();openForm('${id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        수정하기
+      </button>
+      ${p.ended
+        ? `<button class="btn-restore-relation" onclick="restoreRelation('${id}')">↩ 관계 복원</button>`
+        : `<button class="btn-end-relation" onclick="endRelation('${id}')">관계 종료</button>`
+      }
+    </div>\``;
   document.getElementById('detail-overlay').classList.add('open');
 }
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); }
