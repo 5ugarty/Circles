@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Circles — People & Notes</title>
+<title>관계 노트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #f4f2f8;
+    --bg: #faf9fc;
     --surface: #ffffff;
-    --surface2: #eeebf5;
-    --surface3: #e5e0f0;
-    --border: rgba(110,90,160,0.10);
-    --border2: rgba(110,90,160,0.22);
-    --text: #1e1a2e;
-    --text2: #5a5470;
-    --text3: #a099b8;
-    --accent: #7c5cbf;
-    --accent-dim: rgba(124,92,191,0.10);
-    --accent-dim2: rgba(124,92,191,0.20);
-    --red: #b04a6e;
-    --radius: 10px;
-    --radius-lg: 14px;
+    --surface2: #f3f1f8;
+    --surface3: #ede9f5;
+    --border: rgba(0,0,0,0.06);
+    --border2: rgba(0,0,0,0.11);
+    --text: #18151f;
+    --text2: #52496a;
+    --text3: #b0a8c8;
+    --accent: #6b4fa8;
+    --accent-dim: rgba(107,79,168,0.08);
+    --accent-dim2: rgba(107,79,168,0.16);
+    --red: #a0405a;
+    --radius: 8px;
+    --radius-lg: 12px;
   }
 
   html { font-size: 15px; }
@@ -44,12 +44,12 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    padding: 48px 0 28px;
-    border-bottom: 0.5px solid var(--border2);
-    margin-bottom: 32px;
+    padding: 36px 0 22px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 24px;
   }
   .site-title {
-    font-family: 'Noto Serif KR', serif;
+    font-family: 'Noto Sans KR', sans-serif;
     font-weight: 300;
     font-size: 26px;
     letter-spacing: -0.02em;
@@ -59,67 +59,83 @@
   .header-meta { font-size: 12px; color: var(--text3); letter-spacing: 0.06em; }
 
   /* ── toolbar ── */
-  .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 24px; }
+  .toolbar-top {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
+  }
+  .toolbar-sub {
+    display: flex; gap: 4px; align-items: center; margin-bottom: 22px; flex-wrap: wrap;
+  }
   .search-wrap { flex: 1; position: relative; }
   .search-wrap svg {
     position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    color: var(--text3); width: 15px; height: 15px;
+    color: var(--text3); width: 14px; height: 14px;
   }
   #search {
     width: 100%; background: var(--surface);
-    border: 0.5px solid var(--border2); border-radius: var(--radius);
+    border: 1px solid var(--border2); border-radius: var(--radius);
     color: var(--text); font-family: 'Noto Sans KR', sans-serif;
     font-weight: 300; font-size: 14px;
-    padding: 10px 14px 10px 36px; outline: none; transition: border-color 0.15s;
+    padding: 11px 14px 11px 36px; outline: none; transition: border-color 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   }
   #search::placeholder { color: var(--text3); }
-  #search:focus { border-color: var(--accent); }
+  #search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 
-  /* 툴바 버튼들 — 같은 스타일 */
   .toolbar-btn {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--surface); border: 0.5px solid var(--border2);
-    border-radius: var(--radius); color: var(--text2);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 300;
-    padding: 10px 15px; cursor: pointer; white-space: nowrap;
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent); border: none;
+    border-radius: var(--radius); color: #fff;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 400;
+    padding: 11px 18px; cursor: pointer; white-space: nowrap;
+    transition: opacity 0.15s;
   }
-  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .toolbar-btn.primary {
-    background: var(--accent); border-color: var(--accent);
-    color: #fff; font-weight: 400;
-  }
-  .toolbar-btn.primary:hover { opacity: 0.88; color: #fff; }
+  .toolbar-btn:hover { opacity: 0.88; }
+  .toolbar-btn.primary { background: var(--accent); }
 
-  /* ── sort tabs ── */
-  .sort-tabs { display: flex; margin-bottom: 20px; border-bottom: 0.5px solid var(--border2); }
-  .sort-tab {
-    background: none; border: none; color: var(--text3);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 300;
-    padding: 8px 16px; cursor: pointer;
-    border-bottom: 1.5px solid transparent; margin-bottom: -0.5px;
+  .sub-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: none; border: 1px solid var(--border2);
+    border-radius: 6px; color: var(--text3);
+    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
+    padding: 5px 11px; cursor: pointer; white-space: nowrap;
     transition: color 0.15s, border-color 0.15s;
   }
-  .sort-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .sort-tab:hover:not(.active) { color: var(--text2); }
+  .sub-btn:hover { color: var(--text2); border-color: var(--border2); }
+  .sub-btn.danger { color: #c0748a; }
+  .sub-btn.danger:hover { color: var(--red); border-color: var(--red); }
+  .sub-divider {
+    width: 1px; height: 16px; background: var(--border2); margin: 0 4px;
+  }
 
-  .count-line { font-size: 12px; color: var(--text3); margin-bottom: 14px; }
+  /* ── sort tabs ── */
+  .sort-tabs { display: flex; margin-bottom: 0; }
+  .sort-tab {
+    background: none; border: none; color: var(--text3);
+    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
+    padding: 8px 14px; cursor: pointer; border-radius: 6px;
+    transition: color 0.12s, background 0.12s;
+  }
+  .sort-tab.active { color: var(--accent); background: var(--accent-dim); font-weight: 400; }
+  .sort-tab:hover:not(.active) { color: var(--text2); background: var(--surface2); }
+
+  .count-line { font-size: 12px; color: var(--text3); margin-bottom: 12px; padding-top: 14px; }
 
   /* ── cards ── */
   .card-grid { display: flex; flex-direction: column; gap: 8px; }
 
   .person-card {
-    background: var(--surface); border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg); padding: 16px 18px;
-    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 20px;
+    cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
-  .person-card:hover { border-color: var(--border2); background: #fdfcff; }
+  .person-card:hover { border-color: rgba(107,79,168,0.2); box-shadow: 0 2px 10px rgba(107,79,168,0.08); }
 
   .card-top { display: flex; align-items: flex-start; gap: 0; }
   .card-main { flex: 1; min-width: 0; }
   .card-name {
     font-size: 15px; font-weight: 500; color: var(--text);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
   }
   .card-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
@@ -162,11 +178,10 @@
   /* ── group view ── */
   .group-section { margin-bottom: 28px; }
   .group-header {
-    font-size: 15px; font-weight: 400; letter-spacing: -0.01em;
-    text-transform: none; color: var(--accent);
-    font-family: 'Noto Serif KR', serif;
-    padding: 0 0 10px; border-bottom: 0.5px solid var(--border2);
-    margin-bottom: 10px;
+    font-size: 14px; font-weight: 500; letter-spacing: 0.01em;
+    color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
+    padding: 16px 0 10px; border-bottom: 1px solid var(--border);
+    margin-bottom: 10px; display: flex; align-items: center;
   }
 
   /* ── birthday banner ── */
@@ -182,7 +197,7 @@
   .empty { text-align: center; padding: 70px 20px; color: var(--text3); }
   .empty-icon { font-size: 36px; margin-bottom: 14px; opacity: .35; }
   .empty-title {
-    font-family: 'Noto Serif KR', serif; font-size: 17px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 17px;
     font-weight: 300; color: var(--text2); margin-bottom: 6px;
   }
   .empty-desc { font-size: 13px; }
@@ -196,17 +211,18 @@
   }
   .overlay.open { opacity: 1; pointer-events: all; }
   .modal {
-    background: var(--surface); border: 0.5px solid var(--border2);
+    background: var(--surface); border: 1px solid var(--border);
     border-radius: 16px; width: 100%; max-width: 520px;
-    max-height: 88vh; overflow-y: auto; padding: 26px;
-    transform: translateY(10px); transition: transform 0.2s;
+    max-height: 88vh; overflow-y: auto; padding: 28px;
+    transform: translateY(12px); transition: transform 0.22s;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
   }
   .overlay.open .modal { transform: translateY(0); }
   .modal::-webkit-scrollbar { width: 4px; }
   .modal::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
   .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
-  .modal-title { font-family: 'Noto Serif KR', serif; font-size: 17px; font-weight: 300; }
+  .modal-title { font-family: 'Noto Sans KR', sans-serif; font-size: 17px; font-weight: 300; }
 
   .field { margin-bottom: 16px; }
   .field-label {
@@ -303,7 +319,7 @@
 
   /* detail modal */
   .detail-name {
-    font-family: 'Noto Serif KR', serif; font-size: 22px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 22px;
     font-weight: 300; letter-spacing: -0.02em; margin-bottom: 5px;
   }
   .detail-meta { font-size: 13px; color: var(--text3); margin-bottom: 12px; }
@@ -343,24 +359,25 @@
   /* ── 종료 관계 ── */
   .view-tabs {
     display: flex; gap: 0; margin-bottom: 0;
-    border-bottom: 0.5px solid var(--border2);
+    border-bottom: 1px solid var(--border);
   }
   .view-tab {
     background: none; border: none; color: var(--text3);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 300;
-    padding: 10px 20px; cursor: pointer;
-    border-bottom: 2px solid transparent; margin-bottom: -0.5px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 13.5px; font-weight: 300;
+    padding: 10px 22px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
     transition: color 0.15s, border-color 0.15s;
   }
-  .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 400; }
-  .view-tab.ended-tab.active { color: var(--text3); border-bottom-color: var(--text3); }
+  .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+  .view-tab.ended-tab.active { color: var(--text2); border-bottom-color: var(--text2); }
   .view-tab:hover:not(.active) { color: var(--text2); }
 
   .ended-badge {
-    display: inline-block; font-size: 10px; font-weight: 500;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 500; min-width: 18px; height: 18px;
     background: var(--surface3); color: var(--text3);
-    border-radius: 4px; padding: 1px 6px; letter-spacing: 0.04em;
-    vertical-align: middle; margin-left: 4px;
+    border-radius: 20px; padding: 0 6px; letter-spacing: 0;
+    vertical-align: middle; margin-left: 6px;
   }
   .person-card.ended {
     opacity: 0.65; border-style: dashed;
@@ -404,7 +421,7 @@
 <body>
 <div class="shell">
   <header class="site-header">
-    <h1 class="site-title">Circles<span>.</span></h1>
+    <h1 class="site-title">관계 노트</h1>
     <div style="display:flex;align-items:center;gap:12px">
       <span id="sync-status" style="font-size:12px;color:var(--text3);letter-spacing:0.04em"></span>
       <p class="header-meta" id="today-label"></p>
@@ -413,38 +430,38 @@
 
   <div class="bday-banner" id="bday-banner"></div>
 
-  <div class="toolbar">
+  <div class="toolbar-top">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="search" placeholder="이름, 태그, 그룹, MBTI로 검색">
     </div>
-    <button class="toolbar-btn" onclick="openSyncModal()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
-      GITHUB GIST 동기화 설정
-    </button>
-    <button class="toolbar-btn" onclick="gistSave()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      지금 업로드
-    </button>
-    <button class="toolbar-btn" onclick="gistLoad()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      지금 다운로드
-    </button>
-    <button class="toolbar-btn" onclick="exportData()">데이터 내보내기</button>
-    <label class="toolbar-btn" style="cursor:pointer">
-      데이터 가져오기
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-    </label>
-    <button class="toolbar-btn" onclick="resetAll()" style="color:var(--red)">전체 데이터 초기화</button>
     <button class="toolbar-btn primary" onclick="openForm()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-      추가
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      새 사람
     </button>
+  </div>
+  <div class="toolbar-sub">
+    <button class="sub-btn" onclick="openSyncModal()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+      Gist 동기화 설정
+    </button>
+    <button class="sub-btn" onclick="gistSave()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+      업로드
+    </button>
+    <button class="sub-btn" onclick="gistLoad()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+      다운로드
+    </button>
+    <span class="sub-divider"></span>
+    <button class="sub-btn" onclick="exportData()">내보내기</button>
+    <label class="sub-btn" style="cursor:pointer">가져오기<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></label>
+    <button class="sub-btn danger" onclick="resetAll()">초기화</button>
   </div>
 
   <div class="view-tabs">
-    <button class="view-tab active" id="vtab-active" onclick="setView('active',this)">활성</button>
-    <button class="view-tab ended-tab" id="vtab-ended" onclick="setView('ended',this)">종료된 관계 <span class="ended-badge" id="ended-count">0</span></button>
+    <button class="view-tab active" id="vtab-active" onclick="setView('active',this)">목록</button>
+    <button class="view-tab ended-tab" id="vtab-ended" onclick="setView('ended',this)">종료 <span class="ended-badge" id="ended-count">0</span></button>
   </div>
 
   <div id="sort-tabs-wrap">
