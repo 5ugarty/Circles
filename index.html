@@ -416,6 +416,80 @@
     transition: color 0.15s, border-color 0.15s;
   }
   .group-restore-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── 관계 (겹지인/커플) ── */
+  .relation-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .relation-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border-radius: 8px; padding: 7px 10px;
+    font-size: 13px;
+  }
+  .relation-emoji { font-size: 15px; flex-shrink: 0; }
+  .relation-name { flex: 1; color: var(--text2); font-weight: 400; cursor: pointer; }
+  .relation-name:hover { color: var(--accent); text-decoration: underline; }
+  .relation-del {
+    background: none; border: none; cursor: pointer; color: var(--text3);
+    font-size: 16px; line-height: 1; padding: 0 2px;
+    transition: color 0.12s;
+  }
+  .relation-del:hover { color: var(--red); }
+
+  /* 관계 추가 UI */
+  .relation-add-wrap { margin-top: 6px; }
+  .relation-type-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .rel-type-btn {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 20px; font-size: 13px; padding: 4px 12px;
+    cursor: pointer; color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
+    transition: background 0.12s, border-color 0.12s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .rel-type-btn.active {
+    background: var(--accent-dim); border-color: var(--accent); color: var(--accent);
+  }
+  .rel-person-wrap {
+    display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .rel-person-search {
+    flex: 1; min-width: 160px; position: relative;
+  }
+  .rel-person-search input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 8px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300; font-size: 13px; padding: 7px 12px; outline: none;
+    transition: border-color 0.12s;
+  }
+  .rel-person-search input:focus { border-color: var(--accent); }
+  .rel-person-dropdown {
+    position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    z-index: 60; display: none; overflow: hidden;
+  }
+  .rel-person-dropdown.open { display: block; }
+  .rel-person-opt {
+    padding: 8px 12px; font-size: 13px; color: var(--text2);
+    cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
+    transition: background 0.1s;
+  }
+  .rel-person-opt:hover { background: var(--surface2); color: var(--text); }
+  .rel-add-confirm {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 8px; color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px; padding: 7px 14px; cursor: pointer; white-space: nowrap;
+    transition: border-color 0.12s, color 0.12s;
+  }
+  .rel-add-confirm:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* 카드/상세 관계 표시 */
+  .card-relations { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .relation-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--surface2); border-radius: 20px;
+    font-size: 12px; padding: 2px 9px; color: var(--text2);
+  }
 </style>
 </head>
 <body>
@@ -513,6 +587,27 @@
           <input type="text" id="group-field" class="chip-input" placeholder="그룹 선택 또는 새로 입력…" autocomplete="off" oninput="showGroupDropdown()" onfocus="showGroupDropdown()">
         </div>
         <div class="group-dropdown" id="group-dropdown"></div>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">관계</div>
+      <div class="relation-list" id="rel-list"></div>
+      <div class="relation-add-wrap" id="rel-add-wrap">
+        <div class="relation-type-row" id="rel-type-row">
+          <button type="button" class="rel-type-btn" data-type="mutual" onclick="selectRelType(this)">👥 겹지인</button>
+          <button type="button" class="rel-type-btn" data-type="couple" onclick="selectRelType(this)">❤ 커플</button>
+          <button type="button" class="rel-type-btn" data-type="ex" onclick="selectRelType(this)">💔 EX</button>
+          <button type="button" class="rel-type-btn" data-type="crush" onclick="selectRelType(this)">💘 짝사랑</button>
+          <button type="button" class="rel-type-btn" data-type="admired" onclick="selectRelType(this)">💌 짝사랑받음</button>
+        </div>
+        <div class="rel-person-wrap" id="rel-person-wrap" style="display:none">
+          <div class="rel-person-search">
+            <input type="text" id="rel-search" placeholder="이름 검색 또는 직접 입력…" autocomplete="off"
+              oninput="showRelDropdown()" onfocus="showRelDropdown()">
+            <div class="rel-person-dropdown" id="rel-dropdown"></div>
+          </div>
+          <button type="button" class="rel-add-confirm" onclick="confirmAddRelation()">추가</button>
+        </div>
       </div>
     </div>
     <div class="field">
@@ -624,6 +719,8 @@ const STORE = 'ppl_v1';
 let people = JSON.parse(localStorage.getItem(STORE) || '[]');
 let sortKey = 'name';
 let viewMode = 'active'; // 'active' | 'ended'
+let formRelations = [];
+let selectedRelType = null;
 let editId = null;
 let tags = [];
 let groups = [];
@@ -728,6 +825,13 @@ function cardHtml(p) {
   const dayBadge = days!==null&&days<=7
     ? `<span style="font-size:11px;color:var(--accent)">${days===0?'🎂 오늘!':`D-${days}`}</span>` : '';
   const tagHtml = (p.tags||[]).map(t=>`<span class="tag-pill">${t}</span>`).join('');
+  const relEmojis = {'mutual':'👥','couple':'❤','ex':'💔','crush':'💘','admired':'💌'};
+  const relHtml = (p.relations||[]).length
+    ? `<div class="card-relations">${(p.relations).map(r=>{
+        const other = people.find(x=>x.id===r.personId);
+        const name = other ? other.name : r.personName;
+        return `<span class="relation-chip">${relEmojis[r.type]||''} ${name}</span>`;
+      }).join('')}</div>` : '';
   const mbtiHtml = p.mbti ? `<span class="mbti-badge">${p.mbti}</span>` : '';
   const groupStr = sortKey !== 'group' ? (p.groups||[]).join(' · ') : '';
   const subParts = [bday, groupStr].filter(Boolean);
@@ -744,6 +848,7 @@ function cardHtml(p) {
       <div class="card-main">
         <div class="card-name">${p.name}${dayBadge}${mbtiHtml}${tagHtml?`<span class="card-tags-inline">${tagHtml}</span>`:''}</div>
         <div class="card-sub">${subParts.join(' · ')}</div>
+        ${relHtml}
       </div>
       <div class="card-actions">
         <button class="icon-btn" onclick="event.stopPropagation();openForm('${p.id}')" title="수정">
@@ -833,6 +938,14 @@ function openDetail(id) {
     <div class="detail-name">${p.name}${p.mbti?` <span class="mbti-badge" style="font-size:13px;vertical-align:middle">${p.mbti}</span>`:''}</div>
     <div class="detail-meta">${subParts.join(' · ')||'정보 없음'}</div>
     ${(p.tags||[]).length?`<div class="detail-tags">${p.tags.map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div>`:''}
+    ${(p.relations||[]).length?`<div class="detail-tags">${(p.relations).map(r=>{
+      const other=people.find(x=>x.id===r.personId);
+      const nm=other?other.name:r.personName;
+      const emojis={'mutual':'👥','couple':'❤','ex':'💔','crush':'💘','admired':'💌'};
+      return `<span class="relation-chip" style="cursor:pointer;font-size:13px;padding:3px 11px" onclick="closeDetail();${other?`openDetail('${r.personId}')`:''}">
+        ${emojis[r.type]||''} ${nm}
+      </span>`;
+    }).join('')}</div>`:''}`
     ${memosHtml||'<p style="font-size:13px;color:var(--text3);padding:12px 0">메모가 없어요</p>'}
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="detail-edit-btn" onclick="closeDetail();openForm('${id}')">
@@ -859,6 +972,11 @@ function openForm(id=null) {
   document.getElementById('group-wrap').querySelectorAll('.tag-chip').forEach(e=>e.remove());
   document.getElementById('group-field').value='';
   document.getElementById('memo-blocks').innerHTML='';
+  formRelations=[];
+  renderFormRelations();
+  document.querySelectorAll('.rel-type-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('rel-person-wrap').style.display='none';
+  selectedRelType=null;
 
   if (id) {
     const p = people.find(x=>x.id===id);
@@ -867,7 +985,8 @@ function openForm(id=null) {
       document.getElementById('f-birth').value=p.birth||'';
       document.getElementById('f-mbti').value=p.mbti||'';
       tags=[...(p.tags||[])]; groups=[...(p.groups||[])];
-      renderChips(); renderGroupChips();
+      formRelations=[...(p.relations||[])];
+      renderChips(); renderGroupChips(); renderFormRelations();
       (p.memos||[]).forEach(m=>addMemo(m.label,m.text));
     }
   }
@@ -974,6 +1093,88 @@ function addMemo(label='',text='') {
   document.getElementById('memo-blocks').appendChild(wrap);
 }
 
+
+// ── 관계 (겹지인/커플 등) ──
+const REL_LABELS = {mutual:'👥 겹지인', couple:'❤ 커플', ex:'💔 EX', crush:'💘 짝사랑', admired:'💌 짝사랑받음'};
+
+function selectRelType(btn) {
+  document.querySelectorAll('.rel-type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedRelType = btn.dataset.type;
+  document.getElementById('rel-person-wrap').style.display = 'flex';
+  document.getElementById('rel-search').value = '';
+  document.getElementById('rel-dropdown').classList.remove('open');
+  setTimeout(()=>document.getElementById('rel-search').focus(), 50);
+}
+
+function showRelDropdown() {
+  const q = document.getElementById('rel-search').value.toLowerCase();
+  const dd = document.getElementById('rel-dropdown');
+  const excludeId = editId;
+  const existIds = new Set(formRelations.map(r=>r.personId));
+  const opts = people.filter(p=>
+    p.id !== excludeId &&
+    !existIds.has(p.id) &&
+    (q === '' || p.name.toLowerCase().includes(q))
+  ).slice(0, 8);
+
+  if (!opts.length) { dd.classList.remove('open'); return; }
+  dd.innerHTML = opts.map(p=>
+    `<div class="rel-person-opt" onmousedown="pickRelPerson('${p.id}','${p.name.replace(/'/g,"\\'")}')">
+      ${p.name}${p.mbti?` <span style="font-size:11px;color:var(--text3)">${p.mbti}</span>`:''}
+    </div>`
+  ).join('');
+  dd.classList.add('open');
+}
+
+function pickRelPerson(id, name) {
+  document.getElementById('rel-search').value = name;
+  document.getElementById('rel-dropdown').classList.remove('open');
+  document.getElementById('rel-search').dataset.pickedId = id;
+}
+
+function confirmAddRelation() {
+  if (!selectedRelType) { alert('관계 유형을 선택해 주세요.'); return; }
+  const input = document.getElementById('rel-search');
+  const name = input.value.trim();
+  if (!name) { alert('이름을 입력해 주세요.'); return; }
+  const pickedId = input.dataset.pickedId || null;
+  // 이름이 바뀌었으면 pickedId 무효
+  const personId = pickedId && people.find(p=>p.id===pickedId&&p.name===name) ? pickedId : null;
+  const personName = name;
+  formRelations.push({ type: selectedRelType, personId, personName });
+  renderFormRelations();
+  input.value = '';
+  input.dataset.pickedId = '';
+  document.getElementById('rel-dropdown').classList.remove('open');
+}
+
+function renderFormRelations() {
+  const list = document.getElementById('rel-list');
+  if (!list) return;
+  if (!formRelations.length) { list.innerHTML = ''; return; }
+  list.innerHTML = formRelations.map((r,i)=>{
+    const label = REL_LABELS[r.type] || r.type;
+    return `<div class="relation-row">
+      <span class="relation-emoji">${label.split(' ')[0]}</span>
+      <span class="relation-name">${r.personName}</span>
+      <span style="font-size:11px;color:var(--text3);margin-right:4px">${label.split(' ').slice(1).join(' ')}</span>
+      <button class="relation-del" onclick="removeFormRelation(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function removeFormRelation(i) {
+  formRelations.splice(i, 1);
+  renderFormRelations();
+}
+
+document.addEventListener('click', e=>{
+  if (!e.target.closest('.rel-person-search')) {
+    document.getElementById('rel-dropdown')?.classList.remove('open');
+  }
+});
+
 function savePerson() {
   const name=document.getElementById('f-name').value.trim();
   if(!name){alert('이름을 입력해 주세요.');return;}
@@ -986,9 +1187,9 @@ function savePerson() {
 
   if(editId){
     const p=people.find(x=>x.id===editId);
-    if(p){p.name=name;p.birth=birth;p.mbti=mbti;p.tags=[...tags];p.groups=[...groups];p.memos=memos;}
+    if(p){p.name=name;p.birth=birth;p.mbti=mbti;p.tags=[...tags];p.groups=[...groups];p.memos=memos;p.relations=[...formRelations];}
   } else {
-    people.push({id:Date.now().toString(),name,birth,mbti,tags:[...tags],groups:[...groups],memos});
+    people.push({id:Date.now().toString(),name,birth,mbti,tags:[...tags],groups:[...groups],memos,relations:[...formRelations]});
   }
   persist();closeForm();renderList();renderBdayBanner();
 }
