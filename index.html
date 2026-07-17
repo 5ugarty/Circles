@@ -956,7 +956,7 @@ function openDetail(id) {
         ? `<button class="btn-restore-relation" onclick="restoreRelation('${id}')">↩ 관계 복원</button>`
         : `<button class="btn-end-relation" onclick="endRelation('${id}')">관계 종료</button>`
       }
-    </div>\``;
+    </div>`;
   document.getElementById('detail-overlay').classList.add('open');
 }
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); }
