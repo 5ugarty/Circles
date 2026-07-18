@@ -922,41 +922,57 @@ function deletePerson(id) {
 
 function openDetail(id) {
   const p = people.find(x=>x.id===id); if (!p) return;
-  const memosHtml = (p.memos||[]).filter(m=>m.text).map(m=>`
-    <div class="detail-memo">
-      ${m.label?`<div class="detail-memo-label">${m.label}</div>`:''}
-      <div class="detail-memo-body">${m.text}</div>
-    </div>`).join('');
+  const emojis = {mutual:'👥',couple:'❤',ex:'💔',crush:'💘',admired:'💌'};
+
+  // 메모
+  let memosHtml = '';
+  (p.memos||[]).filter(m=>m.text).forEach(m=>{
+    memosHtml += '<div class="detail-memo">';
+    if(m.label) memosHtml += '<div class="detail-memo-label">'+m.label+'</div>';
+    memosHtml += '<div class="detail-memo-body">'+m.text+'</div></div>';
+  });
+  if(!memosHtml) memosHtml = '<p style="font-size:13px;color:var(--text3);padding:12px 0">메모가 없어요</p>';
+
+  // 태그
+  let tagsHtml = '';
+  if((p.tags||[]).length){
+    tagsHtml = '<div class="detail-tags">';
+    p.tags.forEach(t=>{ tagsHtml += '<span class="tag-pill">'+t+'</span>'; });
+    tagsHtml += '</div>';
+  }
+
+  // 관계
+  let relHtml = '';
+  if((p.relations||[]).length){
+    relHtml = '<div class="detail-tags" style="margin-top:6px">';
+    p.relations.forEach(r=>{
+      const other = people.find(x=>x.id===r.personId);
+      const nm = other ? other.name : r.personName;
+      const emoji = emojis[r.type]||'';
+      const click = other ? 'closeDetail();openDetail('+JSON.stringify(r.personId)+')' : '';
+      relHtml += '<span class="relation-chip" style="cursor:'+(other?'pointer':'default')+';font-size:13px;padding:3px 11px" onclick="'+click+'">'+emoji+' '+nm+'</span>';
+    });
+    relHtml += '</div>';
+  }
+
+  // 부제목
   const subParts = [p.birth?fmtBirth(p.birth):'',(p.groups||[]).join(' · ')].filter(Boolean);
-  document.getElementById('detail-body').innerHTML = `
-    <div class="modal-header">
-      <span></span>
-      <button class="icon-btn" onclick="closeDetail()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="detail-name">${p.name}${p.mbti?` <span class="mbti-badge" style="font-size:13px;vertical-align:middle">${p.mbti}</span>`:''}</div>
-    <div class="detail-meta">${subParts.join(' · ')||'정보 없음'}</div>
-    ${(p.tags||[]).length?`<div class="detail-tags">${p.tags.map(t=>`<span class="tag-pill">${t}</span>`).join('')}</div>`:''}
-    ${(p.relations||[]).length?`<div class="detail-tags">${(p.relations).map(r=>{
-      const other=people.find(x=>x.id===r.personId);
-      const nm=other?other.name:r.personName;
-      const emojis={'mutual':'👥','couple':'❤','ex':'💔','crush':'💘','admired':'💌'};
-      return `<span class="relation-chip" style="cursor:pointer;font-size:13px;padding:3px 11px" onclick="closeDetail();${other?`openDetail('${r.personId}')`:''}">
-        ${emojis[r.type]||''} ${nm}
-      </span>`;
-    }).join('')}</div>`:''}`
-    ${memosHtml||'<p style="font-size:13px;color:var(--text3);padding:12px 0">메모가 없어요</p>'}
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="detail-edit-btn" onclick="closeDetail();openForm('${id}')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        수정하기
-      </button>
-      ${p.ended
-        ? `<button class="btn-restore-relation" onclick="restoreRelation('${id}')">↩ 관계 복원</button>`
-        : `<button class="btn-end-relation" onclick="endRelation('${id}')">관계 종료</button>`
-      }
-    </div>`;
+  const mbtiSpan = p.mbti ? ' <span class="mbti-badge" style="font-size:13px;vertical-align:middle">'+p.mbti+'</span>' : '';
+  const endBtn = p.ended
+    ? '<button class="btn-restore-relation" onclick="restoreRelation('+JSON.stringify(id)+')">↩ 관계 복원</button>'
+    : '<button class="btn-end-relation" onclick="endRelation('+JSON.stringify(id)+')">관계 종료</button>';
+
+  document.getElementById('detail-body').innerHTML =
+    '<div class="modal-header"><span></span>' +
+    '<button class="icon-btn" onclick="closeDetail()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>' +
+    '<div class="detail-name">'+p.name+mbtiSpan+'</div>' +
+    '<div class="detail-meta">'+(subParts.join(' · ')||'정보 없음')+'</div>' +
+    tagsHtml + relHtml + memosHtml +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">' +
+    '<button class="detail-edit-btn" onclick="closeDetail();openForm('+JSON.stringify(id)+')">' +
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>수정하기</button>' +
+    endBtn + '</div>';
+
   document.getElementById('detail-overlay').classList.add('open');
 }
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); }
