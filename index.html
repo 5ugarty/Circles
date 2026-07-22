@@ -512,12 +512,12 @@
     display: flex; align-items: center; gap: 8px;
   }
   .photo-date-label span { font-weight: 500; color: var(--text2); }
-  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
   .photo-thumb {
-    aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 4/3; border-radius: 8px; overflow: hidden;
     cursor: pointer; position: relative; background: var(--surface2);
   }
-  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; background: #f0eef8; }
   .photo-thumb:hover .photo-thumb-overlay { opacity: 1; }
   .photo-thumb-overlay {
     position: absolute; inset: 0; background: rgba(0,0,0,0.35);
@@ -575,6 +575,14 @@
 
   /* 설정 모달에 레포 필드 */
   .repo-field-note { font-size: 11px; color: var(--text3); margin-top: 5px; }
+
+  .photo-batch-del {
+    background: none; border: 1px solid var(--border2); border-radius: 6px;
+    color: var(--text3); font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px; padding: 3px 9px; cursor: pointer; margin-left: 8px;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .photo-batch-del:hover { color: var(--red); border-color: var(--red); }
 </style>
 </head>
 <body>
@@ -1531,6 +1539,37 @@ async function loadPhotoUrls(personId) {
   return urlMap;
 }
 
+
+async function batchDeleteByDate(personId, date) {
+  const p = people.find(x => x.id === personId);
+  if (!p) return;
+  const targets = (p.photos||[]).filter(x => x.date === date);
+  if (!targets.length) return;
+  if (!confirm(date + ' 사진 ' + targets.length + '장을 모두 삭제할까요?')) return;
+
+  const repo = getRepo();
+  for (const photo of targets) {
+    if (repo && GITHUB_TOKEN) {
+      try {
+        const chk = await fetch('https://api.github.com/repos/' + repo + '/contents/' + photo.path, {
+          headers: { Authorization: 'token ' + GITHUB_TOKEN }
+        });
+        if (chk.ok) {
+          const d = await chk.json();
+          await fetch('https://api.github.com/repos/' + repo + '/contents/' + photo.path, {
+            method: 'DELETE',
+            headers: { Authorization: 'token ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'Delete photo: ' + photo.name, sha: d.sha })
+          });
+        }
+      } catch(e) { console.error(e); }
+    }
+  }
+  p.photos = (p.photos||[]).filter(x => x.date !== date);
+  persist();
+  openDetail(personId);
+}
+
 // 사진 삭제
 async function deletePhoto(personId, path, name) {
   if (!confirm(name + '을(를) 삭제할까요?')) return;
@@ -1578,7 +1617,8 @@ async function renderPhotoSection(personId) {
   dates.forEach((date, di) => {
     const photos = urlMap[date];
     html += '<div class="photo-date-group">';
-    html += '<div class="photo-date-label"><span>' + date + '</span> · ' + photos.length + '장</div>';
+    html += '<div class="photo-date-label"><span>' + date + '</span> · ' + photos.length + '장' +
+      '<button class="photo-batch-del" data-bpid="' + personId + '" data-bdate="' + date + '">날짜 전체 삭제</button></div>';
     html += '<div class="photo-grid">';
     photos.forEach((photo, i) => {
       // data 속성으로 전달해서 onclick 따옴표 충돌 완전 제거
@@ -1607,6 +1647,13 @@ async function renderPhotoSection(personId) {
     const name = decodeURIComponent(thumb.dataset.name);
     if (viewBtn) openViewer(pid, date, idx);
     if (delBtn) deletePhoto(pid, path, name);
+
+    const batchBtn = e.target.closest('.photo-batch-del');
+    if (batchBtn) {
+      const bpid = batchBtn.dataset.bpid;
+      const bdate = batchBtn.dataset.bdate;
+      batchDeleteByDate(bpid, bdate);
+    }
   });
 }
 
