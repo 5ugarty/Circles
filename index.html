@@ -205,8 +205,8 @@
   /* ── overlay / modal ── */
   .overlay {
     position: fixed; inset: 0; background: rgba(20,15,40,0.45);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 200; padding: 20px;
+    display: flex; align-items: flex-start; justify-content: center;
+    z-index: 200; padding: 40px 20px; overflow-y: auto;
     opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .overlay.open { opacity: 1; pointer-events: all; }
@@ -717,7 +717,7 @@
 
 <!-- detail modal -->
 <div class="overlay" id="detail-overlay" onclick="overlayClick(event,'detail-overlay')">
-  <div class="modal" id="detail-body" role="dialog" aria-modal="true"></div>
+  <div class="modal" id="detail-body" role="dialog" aria-modal="true" style="overflow-y:auto;max-height:88vh"></div>
 </div>
 
 <script>
