@@ -205,15 +205,15 @@
   /* ── overlay / modal ── */
   .overlay {
     position: fixed; inset: 0; background: rgba(20,15,40,0.45);
-    display: block; overflow-y: auto;
-    z-index: 200; padding: 40px 20px;
+    display: flex; align-items: flex-start; justify-content: center;
+    z-index: 200; padding: 40px 20px; overflow-y: auto;
     opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .overlay.open { opacity: 1; pointer-events: all; }
   .modal {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 16px; width: 100%; max-width: 520px;
-    max-height: 88vh; overflow-y: auto; padding: 28px;
+    padding: 28px; overflow-y: visible;
     transform: translateY(12px); transition: transform 0.22s;
     box-shadow: 0 8px 40px rgba(0,0,0,0.12);
   }
@@ -717,7 +717,7 @@
 
 <!-- detail modal -->
 <div class="overlay" id="detail-overlay" onclick="overlayClick(event,'detail-overlay')">
-  <div class="modal" id="detail-body" role="dialog" aria-modal="true" style="max-height:none;overflow-y:visible"></div>
+  <div class="modal" id="detail-body" role="dialog" aria-modal="true"></div>
 </div>
 
 <script>
@@ -1047,7 +1047,6 @@ function openDetail(id) {
     ? '<button class="btn-restore-relation" onclick="restoreRelation(\''+id+'\')">↩ 관계 복원</button>'
     : '<button class="btn-end-relation" onclick="endRelation(\''+id+'\')">관계 종료</button>';
 
-  document.getElementById('detail-body').style.cssText = 'margin:0 auto;max-height:none';
   document.getElementById('detail-body').innerHTML =
     '<div class="modal-header"><span></span>' +
     '<button class="icon-btn" onclick="closeDetail()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>' +
@@ -1057,9 +1056,21 @@ function openDetail(id) {
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">' +
     '<button class="detail-edit-btn" onclick="closeDetail();openForm(\''+id+'\')">'+
     '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>수정하기</button>' +
-    endBtn + '</div>';
+    endBtn + '</div>' +
+    '<div class="photo-section">' +
+    '<div class="photo-section-head">' +
+    '<span class="photo-section-title">대화 사진</span>' +
+    '<label class="photo-upload-btn" style="cursor:pointer">' +
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>' +
+    ' 사진 추가' +
+    '<input type="file" accept="image/*" multiple style="display:none" onchange="uploadPhotos(\'"+id+"\', this.files)">' +
+    '</label></div>' +
+    '<div class="photo-uploading" id="photo-upload-status-' + id + '">⏳ 업로드 중…</div>' +
+    '<div id="photo-section-' + id + '" style="margin-top:8px">불러오는 중…</div>' +
+    '</div>';
 
   document.getElementById('detail-overlay').classList.add('open');
+  setTimeout(() => renderPhotoSection(id), 80);
 }
 function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); }
 
