@@ -205,8 +205,8 @@
   /* ── overlay / modal ── */
   .overlay {
     position: fixed; inset: 0; background: rgba(20,15,40,0.45);
-    display: flex; align-items: flex-start; justify-content: center;
-    z-index: 200; padding: 40px 20px; overflow-y: auto;
+    display: block; overflow-y: auto;
+    z-index: 200; padding: 40px 20px;
     opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .overlay.open { opacity: 1; pointer-events: all; }
@@ -717,7 +717,7 @@
 
 <!-- detail modal -->
 <div class="overlay" id="detail-overlay" onclick="overlayClick(event,'detail-overlay')">
-  <div class="modal" id="detail-body" role="dialog" aria-modal="true" style="overflow-y:auto;max-height:88vh"></div>
+  <div class="modal" id="detail-body" role="dialog" aria-modal="true" style="max-height:none;overflow-y:visible"></div>
 </div>
 
 <script>
@@ -1047,6 +1047,7 @@ function openDetail(id) {
     ? '<button class="btn-restore-relation" onclick="restoreRelation(\''+id+'\')">↩ 관계 복원</button>'
     : '<button class="btn-end-relation" onclick="endRelation(\''+id+'\')">관계 종료</button>';
 
+  document.getElementById('detail-body').style.cssText = 'margin:0 auto;max-height:none';
   document.getElementById('detail-body').innerHTML =
     '<div class="modal-header"><span></span>' +
     '<button class="icon-btn" onclick="closeDetail()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>' +
