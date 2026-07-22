@@ -1570,30 +1570,44 @@ async function renderPhotoSection(personId) {
     return;
   }
 
+  // 캐시 먼저 저장
+  window._photoCache = window._photoCache || {};
+  window._photoCache[personId] = urlMap;
+
   let html = '';
-  dates.forEach(date => {
+  dates.forEach((date, di) => {
     const photos = urlMap[date];
     html += '<div class="photo-date-group">';
     html += '<div class="photo-date-label"><span>' + date + '</span> · ' + photos.length + '장</div>';
     html += '<div class="photo-grid">';
     photos.forEach((photo, i) => {
-      const encodedPath = encodeURIComponent(JSON.stringify(photo.path));
-      const encodedName = encodeURIComponent(photo.name);
-      const vCall = 'openViewer(' + JSON.stringify(personId) + ',' + JSON.stringify(date) + ',' + i + ')';
-      const dCall = 'deletePhoto(' + JSON.stringify(personId) + ',' + JSON.stringify(photo.path) + ',' + JSON.stringify(photo.name) + ')';
-      html += '<div class="photo-thumb">' +
-        '<img src="' + photo.url + '" loading="lazy" alt="' + photo.name + '">' +
+      // data 속성으로 전달해서 onclick 따옴표 충돌 완전 제거
+      html += '<div class="photo-thumb" data-pid="' + personId + '" data-date="' + date + '" data-idx="' + i + '" data-path="' + encodeURIComponent(photo.path) + '" data-name="' + encodeURIComponent(photo.name) + '">' +
+        '<img src="' + photo.url + '" loading="lazy" alt="' + encodeURIComponent(photo.name) + '">' +
         '<div class="photo-thumb-overlay">' +
-        '<button class="photo-thumb-action" title="보기" onclick="' + vCall + '">👁</button>' +
-        '<button class="photo-thumb-action" title="삭제" onclick="' + dCall + '">🗑</button>' +
+        '<button class="photo-thumb-action thumb-view" title="보기">👁</button>' +
+        '<button class="photo-thumb-action thumb-del" title="삭제">🗑</button>' +
         '</div></div>';
     });
     html += '</div></div>';
   });
   el.innerHTML = html;
-  // 뷰어용 데이터 캐시
-  window._photoCache = window._photoCache || {};
-  window._photoCache[personId] = urlMap;
+
+  // 이벤트 위임으로 클릭 처리
+  el.addEventListener('click', function handler(e) {
+    const viewBtn = e.target.closest('.thumb-view');
+    const delBtn = e.target.closest('.thumb-del');
+    if (!viewBtn && !delBtn) return;
+    const thumb = e.target.closest('.photo-thumb');
+    if (!thumb) return;
+    const pid = thumb.dataset.pid;
+    const date = thumb.dataset.date;
+    const idx = parseInt(thumb.dataset.idx);
+    const path = decodeURIComponent(thumb.dataset.path);
+    const name = decodeURIComponent(thumb.dataset.name);
+    if (viewBtn) openViewer(pid, date, idx);
+    if (delBtn) deletePhoto(pid, path, name);
+  });
 }
 
 // 뷰어
