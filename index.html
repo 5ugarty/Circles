@@ -1063,7 +1063,7 @@ function openDetail(id) {
     '<label class="photo-upload-btn" style="cursor:pointer">' +
     '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>' +
     ' 사진 추가' +
-    '<input type="file" accept="image/*" multiple style="display:none" onchange="uploadPhotos(\'"+id+"\', this.files)">' +
+    '<input type="file" accept="image/*" multiple style="display:none" data-pid="' + id + '" onchange="uploadPhotos(this.dataset.pid, this.files)">' +
     '</label></div>' +
     '<div class="photo-uploading" id="photo-upload-status-' + id + '">⏳ 업로드 중…</div>' +
     '<div id="photo-section-' + id + '" style="margin-top:8px">불러오는 중…</div>' +
@@ -1626,12 +1626,18 @@ function viewerDownload() {
   a.target = '_blank';
   a.click();
 }
-document.getElementById('photo-viewer').addEventListener('click', e => {
-  if (e.target === document.getElementById('photo-viewer')) closeViewer();
+// photo-viewer 이벤트는 DOM 로드 후 등록
+window.addEventListener('DOMContentLoaded', () => {
+  const pv = document.getElementById('photo-viewer');
+  if (pv) {
+    pv.addEventListener('click', e => {
+      if (e.target === pv) closeViewer();
+    });
+  }
 });
 document.addEventListener('keydown', e => {
   const v = document.getElementById('photo-viewer');
-  if (!v.classList.contains('open')) return;
+  if (!v || !v.classList.contains('open')) return;
   if (e.key === 'ArrowLeft') viewerNav(-1);
   if (e.key === 'ArrowRight') viewerNav(1);
   if (e.key === 'Escape') closeViewer();
