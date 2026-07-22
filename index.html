@@ -490,6 +490,91 @@
     background: var(--surface2); border-radius: 20px;
     font-size: 12px; padding: 2px 9px; color: var(--text2);
   }
+
+  /* ── 사진 갤러리 ── */
+  .photo-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+  .photo-section-head {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+  }
+  .photo-section-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.07em; text-transform: uppercase; }
+  .photo-upload-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: none; border: 1px solid var(--border2); border-radius: 6px;
+    color: var(--text3); font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px; padding: 4px 10px; cursor: pointer;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .photo-upload-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .photo-date-group { margin-bottom: 18px; }
+  .photo-date-label {
+    font-size: 11px; color: var(--text3); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .photo-date-label span { font-weight: 500; color: var(--text2); }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; }
+  .photo-thumb {
+    aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    cursor: pointer; position: relative; background: var(--surface2);
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb:hover .photo-thumb-overlay { opacity: 1; }
+  .photo-thumb-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s; gap: 8px;
+  }
+  .photo-thumb-action {
+    background: rgba(255,255,255,0.9); border: none; border-radius: 50%;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 13px;
+  }
+
+  /* 사진 뷰어 */
+  .photo-viewer {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .photo-viewer.open { opacity: 1; pointer-events: all; }
+  .photo-viewer img {
+    max-width: 92vw; max-height: 88vh; object-fit: contain;
+    border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .viewer-close {
+    position: absolute; top: 20px; right: 24px;
+    background: rgba(255,255,255,0.15); border: none; border-radius: 50%;
+    width: 36px; height: 36px; color: #fff; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .viewer-download {
+    position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px; color: #fff; font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px; padding: 8px 20px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: background 0.15s;
+  }
+  .viewer-download:hover { background: rgba(255,255,255,0.25); }
+  .viewer-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+    width: 40px; height: 40px; color: #fff; font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .viewer-nav:hover { background: rgba(255,255,255,0.25); }
+  .viewer-prev { left: 20px; }
+  .viewer-next { right: 20px; }
+
+  .photo-uploading {
+    font-size: 12px; color: var(--accent); padding: 8px 0;
+    display: none; align-items: center; gap: 6px;
+  }
+  .photo-uploading.show { display: flex; }
+
+  /* 설정 모달에 레포 필드 */
+  .repo-field-note { font-size: 11px; color: var(--text3); margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -1201,12 +1286,62 @@ function savePerson() {
     text:b.querySelector('.memo-body').value.trim()
   })).filter(m=>m.text||m.label);
 
+  let savedId;
   if(editId){
     const p=people.find(x=>x.id===editId);
     if(p){p.name=name;p.birth=birth;p.mbti=mbti;p.tags=[...tags];p.groups=[...groups];p.memos=memos;p.relations=[...formRelations];}
+    savedId=editId;
   } else {
-    people.push({id:Date.now().toString(),name,birth,mbti,tags:[...tags],groups:[...groups],memos,relations:[...formRelations]});
+    savedId=Date.now().toString();
+    people.push({id:savedId,name,birth,mbti,tags:[...tags],groups:[...groups],memos,relations:[...formRelations]});
   }
+
+  // 양방향 자동 연결 (겹지인/커플/EX)
+  const MUTUAL_TYPES = new Set(['mutual','couple','ex']);
+  const REVERSE_TYPE = {crush:'admired', admired:'crush'};
+  const savedPerson = people.find(x=>x.id===savedId);
+
+  formRelations.forEach(r=>{
+    if(!r.personId) return; // 직접 입력(ID 없음)은 스킵
+    const other = people.find(x=>x.id===r.personId);
+    if(!other) return;
+
+    // 상대방 relations에서 나를 가리키는 항목 찾기
+    if(!other.relations) other.relations=[];
+    const existIdx = other.relations.findIndex(x=>x.personId===savedId);
+
+    if(MUTUAL_TYPES.has(r.type)){
+      // 같은 타입으로 상대에 추가/갱신
+      if(existIdx>=0){
+        other.relations[existIdx].type=r.type;
+        other.relations[existIdx].personName=name;
+      } else {
+        other.relations.push({type:r.type, personId:savedId, personName:name});
+      }
+    } else if(REVERSE_TYPE[r.type]){
+      // crush → 상대에겐 admired, admired → 상대에겐 crush
+      const revType = REVERSE_TYPE[r.type];
+      if(existIdx>=0){
+        other.relations[existIdx].type=revType;
+        other.relations[existIdx].personName=name;
+      } else {
+        other.relations.push({type:revType, personId:savedId, personName:name});
+      }
+    }
+  });
+
+  // 내 relations에서 삭제된 항목은 상대방에서도 제거
+  if(editId){
+    const prevIds = new Set(formRelations.map(r=>r.personId).filter(Boolean));
+    people.forEach(other=>{
+      if(!other.relations || other.id===savedId) return;
+      const myEntry = other.relations.find(r=>r.personId===savedId);
+      if(myEntry && !prevIds.has(other.id)){
+        other.relations = other.relations.filter(r=>r.personId!==savedId);
+      }
+    });
+  }
+
   persist();closeForm();renderList();renderBdayBanner();
 }
 
@@ -1255,6 +1390,7 @@ document.getElementById('search').addEventListener('input',renderList);
 function openSyncModal() {
   document.getElementById('sync-token').value = localStorage.getItem('circles_token') || '';
   document.getElementById('sync-gist-id').value = localStorage.getItem('circles_gist_id') || '';
+  document.getElementById('sync-repo').value = localStorage.getItem('circles_repo') || '';
   document.getElementById('sync-overlay').classList.add('open');
 }
 function closeSyncModal() {
@@ -1263,10 +1399,13 @@ function closeSyncModal() {
 function saveSyncSettings() {
   const token = document.getElementById('sync-token').value.trim();
   const gid = document.getElementById('sync-gist-id').value.trim();
+  const repo = document.getElementById('sync-repo').value.trim();
   GITHUB_TOKEN = token;
   localStorage.setItem('circles_token', token);
   if (gid) { gistId = gid; localStorage.setItem('circles_gist_id', gid); }
   else { gistId = null; localStorage.removeItem('circles_gist_id'); }
+  if (repo) localStorage.setItem('circles_repo', repo);
+  else localStorage.removeItem('circles_repo');
   closeSyncModal();
   setSyncStatus('idle');
 }
@@ -1284,6 +1423,207 @@ async function testSync() {
   } catch { alert('⚠ 네트워크 오류'); }
   btn.textContent = '연결 테스트'; btn.disabled = false;
 }
+
+
+// ── 사진 기능 ──
+let GITHUB_REPO = localStorage.getItem('circles_repo') || '';
+let viewerPhotos = []; // [{url, name, date}]
+let viewerIdx = 0;
+let currentPhotoPersonId = null;
+
+function getRepo() {
+  return localStorage.getItem('circles_repo') || '';
+}
+
+// 사진 업로드 (GitHub 레포에 원본 저장)
+async function uploadPhotos(personId, files) {
+  const repo = getRepo();
+  if (!repo) { alert('Gist 동기화 설정에서 사진 저장 레포를 먼저 입력해 주세요.'); return; }
+  if (!GITHUB_TOKEN) { alert('GitHub 토큰이 없어요. Gist 동기화 설정을 확인해 주세요.'); return; }
+
+  const statusEl = document.getElementById('photo-upload-status-' + personId);
+  if (statusEl) statusEl.classList.add('show');
+
+  const results = [];
+  for (const file of files) {
+    try {
+      // 날짜 추출: 파일명에서 YYYY-MM-DD 패턴 찾기, 없으면 오늘
+      const dateMatch = file.name.match(/(\d{4})[-_]?(\d{2})[-_]?(\d{2})/);
+      const date = dateMatch
+        ? dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3]
+        : new Date().toISOString().slice(0, 10);
+
+      // base64 변환
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result.split(',')[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+
+      const path = 'photos/' + personId + '/' + date + '/' + file.name;
+      // 이미 있으면 sha 가져오기
+      let sha = null;
+      try {
+        const chk = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+          headers: { Authorization: 'token ' + GITHUB_TOKEN }
+        });
+        if (chk.ok) { const d = await chk.json(); sha = d.sha; }
+      } catch(e) {}
+
+      const body = { message: 'Add photo: ' + file.name, content: base64 };
+      if (sha) body.sha = sha;
+
+      const res = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+        method: 'PUT',
+        headers: { Authorization: 'token ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error('업로드 실패: ' + file.name);
+      results.push({ name: file.name, date, path });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  if (statusEl) statusEl.classList.remove('show');
+
+  // people 데이터에 사진 메타 저장
+  const p = people.find(x => x.id === personId);
+  if (p) {
+    if (!p.photos) p.photos = [];
+    results.forEach(r => {
+      if (!p.photos.find(x => x.path === r.path)) p.photos.push(r);
+    });
+    persist();
+  }
+  // 상세 뷰 갱신
+  openDetail(personId);
+}
+
+// 사진 목록 로드 (GitHub에서 다운로드 URL 가져오기)
+async function loadPhotoUrls(personId) {
+  const repo = getRepo();
+  if (!repo || !GITHUB_TOKEN) return {};
+  const p = people.find(x => x.id === personId);
+  if (!p || !(p.photos||[]).length) return {};
+
+  const urlMap = {};
+  // 날짜별로 묶기
+  p.photos.forEach(photo => {
+    if (!urlMap[photo.date]) urlMap[photo.date] = [];
+    // GitHub raw URL 생성
+    const rawUrl = 'https://raw.githubusercontent.com/' + repo + '/main/' + photo.path;
+    urlMap[photo.date].push({ ...photo, url: rawUrl });
+  });
+  return urlMap;
+}
+
+// 사진 삭제
+async function deletePhoto(personId, path, name) {
+  if (!confirm(name + '을(를) 삭제할까요?')) return;
+  const repo = getRepo();
+  if (repo && GITHUB_TOKEN) {
+    try {
+      const chk = await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+        headers: { Authorization: 'token ' + GITHUB_TOKEN }
+      });
+      if (chk.ok) {
+        const d = await chk.json();
+        await fetch('https://api.github.com/repos/' + repo + '/contents/' + path, {
+          method: 'DELETE',
+          headers: { Authorization: 'token ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'Delete photo: ' + name, sha: d.sha })
+        });
+      }
+    } catch(e) { console.error(e); }
+  }
+  const p = people.find(x => x.id === personId);
+  if (p) {
+    p.photos = (p.photos||[]).filter(x => x.path !== path);
+    persist();
+  }
+  openDetail(personId);
+}
+
+// 갤러리 HTML 렌더링
+async function renderPhotoSection(personId) {
+  const el = document.getElementById('photo-section-' + personId);
+  if (!el) return;
+  const urlMap = await loadPhotoUrls(personId);
+  const dates = Object.keys(urlMap).sort().reverse();
+
+  if (!dates.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:4px 0">사진이 없어요</p>';
+    return;
+  }
+
+  let html = '';
+  dates.forEach(date => {
+    const photos = urlMap[date];
+    html += '<div class="photo-date-group">';
+    html += '<div class="photo-date-label"><span>' + date + '</span> · ' + photos.length + '장</div>';
+    html += '<div class="photo-grid">';
+    photos.forEach((photo, i) => {
+      const encodedPath = encodeURIComponent(JSON.stringify(photo.path));
+      const encodedName = encodeURIComponent(photo.name);
+      const vCall = 'openViewer(' + JSON.stringify(personId) + ',' + JSON.stringify(date) + ',' + i + ')';
+      const dCall = 'deletePhoto(' + JSON.stringify(personId) + ',' + JSON.stringify(photo.path) + ',' + JSON.stringify(photo.name) + ')';
+      html += '<div class="photo-thumb">' +
+        '<img src="' + photo.url + '" loading="lazy" alt="' + photo.name + '">' +
+        '<div class="photo-thumb-overlay">' +
+        '<button class="photo-thumb-action" title="보기" onclick="' + vCall + '">👁</button>' +
+        '<button class="photo-thumb-action" title="삭제" onclick="' + dCall + '">🗑</button>' +
+        '</div></div>';
+    });
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+  // 뷰어용 데이터 캐시
+  window._photoCache = window._photoCache || {};
+  window._photoCache[personId] = urlMap;
+}
+
+// 뷰어
+function openViewer(personId, date, idx) {
+  const urlMap = (window._photoCache||{})[personId] || {};
+  viewerPhotos = urlMap[date] || [];
+  viewerIdx = idx;
+  currentPhotoPersonId = personId;
+  updateViewer();
+  document.getElementById('photo-viewer').classList.add('open');
+}
+function closeViewer() {
+  document.getElementById('photo-viewer').classList.remove('open');
+}
+function updateViewer() {
+  const photo = viewerPhotos[viewerIdx];
+  if (!photo) return;
+  document.getElementById('viewer-img').src = photo.url;
+}
+function viewerNav(dir) {
+  viewerIdx = (viewerIdx + dir + viewerPhotos.length) % viewerPhotos.length;
+  updateViewer();
+}
+function viewerDownload() {
+  const photo = viewerPhotos[viewerIdx];
+  if (!photo) return;
+  const a = document.createElement('a');
+  a.href = photo.url;
+  a.download = photo.name;
+  a.target = '_blank';
+  a.click();
+}
+document.getElementById('photo-viewer').addEventListener('click', e => {
+  if (e.target === document.getElementById('photo-viewer')) closeViewer();
+});
+document.addEventListener('keydown', e => {
+  const v = document.getElementById('photo-viewer');
+  if (!v.classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') viewerNav(-1);
+  if (e.key === 'ArrowRight') viewerNav(1);
+  if (e.key === 'Escape') closeViewer();
+});
 
 // ── 전체 초기화 ──
 function resetAll() {
@@ -1320,12 +1660,29 @@ gistLoad();
       <div class="field-label">Gist ID <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:4px">처음이면 비워두세요 — 자동 생성</span></div>
       <input type="text" id="sync-gist-id" placeholder="자동 생성">
     </div>
+    <div class="field">
+      <div class="field-label">사진 저장 레포 <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:4px">유저명/레포명</span></div>
+      <input type="text" id="sync-repo" placeholder="예: username/circles-photos">
+      <p class="repo-field-note">GitHub 레포지토리에 사진을 원본 그대로 저장해요. 없으면 GitHub에서 새 레포 만들고 입력하세요.</p>
+    </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeSyncModal()">취소</button>
       <button class="btn-cancel" onclick="testSync()" id="test-btn">연결 테스트</button>
       <button class="btn-save" onclick="saveSyncSettings()">저장</button>
     </div>
   </div>
+</div>
+
+<!-- photo viewer -->
+<div class="photo-viewer" id="photo-viewer">
+  <button class="viewer-close" onclick="closeViewer()">✕</button>
+  <button class="viewer-nav viewer-prev" onclick="viewerNav(-1)">‹</button>
+  <img id="viewer-img" src="" alt="">
+  <button class="viewer-nav viewer-next" onclick="viewerNav(1)">›</button>
+  <button class="viewer-download" onclick="viewerDownload()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    원본 다운로드
+  </button>
 </div>
 </body>
 </html>
