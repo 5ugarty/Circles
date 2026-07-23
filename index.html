@@ -5,593 +5,452 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관계 노트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7fa;
+  --surface:#fff;
+  --surface2:#f2f0f7;
+  --surface3:#e8e4f0;
+  --border:rgba(0,0,0,0.07);
+  --border2:rgba(0,0,0,0.13);
+  --text:#17141f;
+  --text2:#4a4460;
+  --text3:#9b94b3;
+  --accent:#5c3fb5;
+  --accent2:#7c5cbf;
+  --accent-dim:rgba(92,63,181,0.08);
+  --accent-dim2:rgba(92,63,181,0.15);
+  --red:#c0395a;
+  --green:#2e8a5a;
+  --r:10px;
+  --rlg:14px;
+}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:300;line-height:1.6;min-height:100vh}
 
-  :root {
-    --bg: #faf9fc;
-    --surface: #ffffff;
-    --surface2: #f3f1f8;
-    --surface3: #ede9f5;
-    --border: rgba(0,0,0,0.06);
-    --border2: rgba(0,0,0,0.11);
-    --text: #18151f;
-    --text2: #52496a;
-    --text3: #b0a8c8;
-    --accent: #6b4fa8;
-    --accent-dim: rgba(107,79,168,0.08);
-    --accent-dim2: rgba(107,79,168,0.16);
-    --red: #a0405a;
-    --radius: 8px;
-    --radius-lg: 12px;
-  }
+/* ── 레이아웃 ── */
+.wrap{max-width:900px;margin:0 auto;padding:0 28px 100px}
 
-  html { font-size: 15px; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 300;
-    line-height: 1.7;
-    min-height: 100vh;
-  }
+/* ── 헤더 ── */
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:32px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.site-title{font-size:20px;font-weight:700;letter-spacing:-0.03em;color:var(--text)}
+.site-title em{color:var(--accent);font-style:normal}
+.header-right{display:flex;align-items:center;gap:12px}
+.sync-badge{font-size:11px;color:var(--text3);letter-spacing:0.03em}
+.today-label{font-size:11px;color:var(--text3)}
 
-  .shell { max-width: 820px; margin: 0 auto; padding: 0 24px 80px; }
+/* ── 툴바 ── */
+.toolbar-top{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.search-wrap{flex:1;position:relative}
+.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;height:14px}
+#search{
+  width:100%;background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--r);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+  font-weight:300;font-size:14px;padding:10px 14px 10px 34px;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+#search::placeholder{color:var(--text3)}
+#search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.btn-add{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--accent);border:none;border-radius:var(--r);
+  color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;
+  padding:10px 18px;cursor:pointer;white-space:nowrap;transition:opacity .15s
+}
+.btn-add:hover{opacity:.88}
 
-  /* ── header ── */
-  .site-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 36px 0 22px;
-    border-bottom: 0.5px solid var(--border);
-    margin-bottom: 24px;
-  }
-  .site-title {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 300;
-    font-size: 26px;
-    letter-spacing: -0.02em;
-    color: var(--text);
-  }
-  .site-title span { color: var(--accent); }
-  .header-meta { font-size: 12px; color: var(--text3); letter-spacing: 0.06em; }
+.toolbar-sub{display:flex;gap:4px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.sub-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  background:none;border:1px solid var(--border2);border-radius:6px;
+  color:var(--text3);font-family:'Noto Sans KR',sans-serif;font-size:11px;font-weight:300;
+  padding:5px 10px;cursor:pointer;white-space:nowrap;transition:color .12s,border-color .12s
+}
+.sub-btn:hover{color:var(--text2);border-color:var(--text3)}
+.sub-btn.danger{color:#c0748a}
+.sub-btn.danger:hover{color:var(--red);border-color:var(--red)}
+.sub-divider{width:1px;height:14px;background:var(--border2);margin:0 4px}
 
-  /* ── toolbar ── */
-  .toolbar-top {
-    display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
-  }
-  .toolbar-sub {
-    display: flex; gap: 4px; align-items: center; margin-bottom: 22px; flex-wrap: wrap;
-  }
-  .search-wrap { flex: 1; position: relative; }
-  .search-wrap svg {
-    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    color: var(--text3); width: 14px; height: 14px;
-  }
-  #search {
-    width: 100%; background: var(--surface);
-    border: 1px solid var(--border2); border-radius: var(--radius);
-    color: var(--text); font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 300; font-size: 14px;
-    padding: 11px 14px 11px 36px; outline: none; transition: border-color 0.15s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  }
-  #search::placeholder { color: var(--text3); }
-  #search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+/* ── view/sort tabs ── */
+.view-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:0}
+.view-tab{
+  background:none;border:none;color:var(--text3);
+  font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:300;
+  padding:9px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:color .12s,border-color .12s
+}
+.view-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.view-tab:hover:not(.active){color:var(--text2)}
+.ended-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;background:var(--surface3);color:var(--text3);
+  border-radius:20px;font-size:10px;font-weight:500;padding:0 5px;
+  vertical-align:middle;margin-left:5px
+}
 
-  .toolbar-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--accent); border: none;
-    border-radius: var(--radius); color: #fff;
-    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 400;
-    padding: 11px 18px; cursor: pointer; white-space: nowrap;
-    transition: opacity 0.15s;
-  }
-  .toolbar-btn:hover { opacity: 0.88; }
-  .toolbar-btn.primary { background: var(--accent); }
+.sort-wrap{padding:12px 0 8px;display:flex;gap:2px}
+.sort-tab{
+  background:none;border:none;color:var(--text3);
+  font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:300;
+  padding:6px 12px;cursor:pointer;border-radius:6px;transition:color .12s,background .12s
+}
+.sort-tab.active{color:var(--accent);background:var(--accent-dim);font-weight:400}
+.sort-tab:hover:not(.active){color:var(--text2);background:var(--surface2)}
 
-  .sub-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: none; border: 1px solid var(--border2);
-    border-radius: 6px; color: var(--text3);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
-    padding: 5px 11px; cursor: pointer; white-space: nowrap;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .sub-btn:hover { color: var(--text2); border-color: var(--border2); }
-  .sub-btn.danger { color: #c0748a; }
-  .sub-btn.danger:hover { color: var(--red); border-color: var(--red); }
-  .sub-divider {
-    width: 1px; height: 16px; background: var(--border2); margin: 0 4px;
-  }
+.count-line{font-size:12px;color:var(--text3);margin-bottom:12px;padding-top:2px}
 
-  /* ── sort tabs ── */
-  .sort-tabs { display: flex; margin-bottom: 0; }
-  .sort-tab {
-    background: none; border: none; color: var(--text3);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
-    padding: 8px 14px; cursor: pointer; border-radius: 6px;
-    transition: color 0.12s, background 0.12s;
-  }
-  .sort-tab.active { color: var(--accent); background: var(--accent-dim); font-weight: 400; }
-  .sort-tab:hover:not(.active) { color: var(--text2); background: var(--surface2); }
+/* ── 카드 목록 (2열 그리드) ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:10px}
+@media(max-width:600px){.card-grid{grid-template-columns:1fr}}
 
-  .count-line { font-size: 12px; color: var(--text3); margin-bottom: 12px; padding-top: 14px; }
+.person-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);
+  padding:16px 18px;cursor:pointer;transition:border-color .15s,box-shadow .15s
+}
+.person-card:hover{border-color:rgba(92,63,181,.25);box-shadow:0 2px 12px rgba(92,63,181,.07)}
+.person-card.ended{opacity:.55;border-style:dashed}
 
-  /* ── cards ── */
-  .card-grid { display: flex; flex-direction: column; gap: 8px; }
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-main{flex:1;min-width:0}
+.card-name{
+  font-size:15px;font-weight:500;color:var(--text);letter-spacing:-0.02em;
+  display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:3px
+}
+.card-sub{font-size:11.5px;color:var(--text3);margin-bottom:4px}
+.card-tags-inline{display:flex;flex-wrap:wrap;gap:3px}
+.tag-pill{
+  background:var(--accent-dim);color:var(--accent);
+  border-radius:20px;font-size:11px;padding:1px 8px
+}
+.mbti-badge{
+  display:inline-block;font-size:10.5px;font-weight:500;letter-spacing:.06em;
+  background:var(--surface2);color:var(--text2);border-radius:5px;
+  padding:1px 6px;border:1px solid var(--border2)
+}
+.card-actions{display:flex;gap:2px;opacity:0;transition:opacity .12s;flex-shrink:0}
+.person-card:hover .card-actions{opacity:1}
+.icon-btn{
+  background:none;border:none;cursor:pointer;color:var(--text3);
+  padding:4px;border-radius:6px;display:flex;align-items:center;transition:color .12s,background .12s
+}
+.icon-btn:hover{color:var(--text2);background:var(--surface2)}
+.icon-btn.danger:hover{color:var(--red)}
 
-  .person-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 16px 20px;
-    cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  }
-  .person-card:hover { border-color: rgba(107,79,168,0.2); box-shadow: 0 2px 10px rgba(107,79,168,0.08); }
+.card-relations{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.relation-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--surface2);border-radius:20px;font-size:11.5px;padding:2px 8px;color:var(--text2)
+}
 
-  .card-top { display: flex; align-items: flex-start; gap: 0; }
-  .card-main { flex: 1; min-width: 0; }
-  .card-name {
-    font-size: 15px; font-weight: 500; color: var(--text);
-    letter-spacing: -0.02em;
-    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-  }
-  .card-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
-  .card-tags-inline { display: flex; flex-wrap: wrap; gap: 4px; }
-  .tag-pill {
-    background: var(--accent-dim); color: var(--accent);
-    border-radius: 20px; font-size: 11px; padding: 1px 9px;
-  }
-  .mbti-badge {
-    display: inline-block; font-size: 10.5px; font-weight: 500;
-    letter-spacing: 0.06em; background: var(--surface2);
-    color: var(--text2); border-radius: 6px; padding: 1px 7px;
-    border: 0.5px solid var(--border2);
-  }
+.card-memos{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.card-memo-item{display:flex;flex-direction:column;gap:1px}
+.preview-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.card-memo-text{font-size:13px;color:var(--text2);line-height:1.6;white-space:pre-wrap;word-break:break-word}
 
-  .card-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
-  .person-card:hover .card-actions { opacity: 1; }
-  .icon-btn {
-    background: none; border: none; cursor: pointer; color: var(--text3);
-    padding: 5px; border-radius: 7px; display: flex; align-items: center;
-    transition: color 0.15s, background 0.15s;
-  }
-  .icon-btn:hover { color: var(--text2); background: var(--surface2); }
-  .icon-btn.danger:hover { color: var(--red); }
+/* 그룹별 */
+.group-section{margin-bottom:24px}
+.group-header{
+  font-size:13px;font-weight:500;color:var(--text2);
+  padding:14px 0 9px;border-bottom:1px solid var(--border);margin-bottom:10px;
+  display:flex;align-items:center;gap:8px
+}
+.group-end-btn,.group-restore-btn{
+  font-size:11px;color:var(--text3);background:none;border:1px solid var(--border2);
+  cursor:pointer;padding:2px 8px;border-radius:5px;
+  font-family:'Noto Sans KR',sans-serif;font-weight:300;transition:color .12s,border-color .12s
+}
+.group-end-btn:hover{color:var(--red);border-color:var(--red)}
+.group-restore-btn:hover{color:var(--accent);border-color:var(--accent)}
 
-  .card-memos {
-    margin-top: 12px; padding-top: 12px; border-top: 0.5px solid var(--border);
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .card-memo-item { display: flex; flex-direction: column; gap: 2px; }
-  .preview-label {
-    font-size: 10.5px; font-weight: 500; letter-spacing: 0.07em;
-    text-transform: uppercase; color: var(--accent);
-  }
-  .card-memo-text {
-    font-size: 13.5px; color: var(--text2); line-height: 1.65;
-    white-space: pre-wrap; word-break: break-word;
-  }
+/* 생일 배너 */
+.bday-banner{
+  background:var(--accent-dim);border:1px solid var(--accent-dim2);
+  border-radius:var(--r);padding:9px 14px;font-size:13px;color:var(--accent);
+  margin-bottom:16px;display:none
+}
+.bday-banner.show{display:block}
 
-  /* ── group view ── */
-  .group-section { margin-bottom: 28px; }
-  .group-header {
-    font-size: 14px; font-weight: 500; letter-spacing: 0.01em;
-    color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
-    padding: 16px 0 10px; border-bottom: 1px solid var(--border);
-    margin-bottom: 10px; display: flex; align-items: center;
-  }
+/* 빈 상태 */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:12px;opacity:.35}
+.empty-title{font-size:16px;font-weight:400;color:var(--text2);margin-bottom:5px}
+.empty-desc{font-size:12px}
 
-  /* ── birthday banner ── */
-  .bday-banner {
-    background: var(--accent-dim); border: 0.5px solid var(--accent-dim2);
-    border-radius: var(--radius); padding: 10px 16px;
-    font-size: 13px; color: var(--accent); margin-bottom: 20px;
-    display: none;
-  }
-  .bday-banner.show { display: block; }
+/* ── 오버레이/모달 ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(15,10,30,.5);
+  display:flex;align-items:flex-start;justify-content:center;
+  z-index:200;padding:40px 20px;overflow-y:auto;
+  opacity:0;pointer-events:none;transition:opacity .2s
+}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  width:100%;max-width:520px;padding:26px;
+  transform:translateY(10px);transition:transform .2s;
+  box-shadow:0 8px 40px rgba(0,0,0,.13);
+}
+.overlay.open .modal{transform:translateY(0)}
+.modal::-webkit-scrollbar{width:3px}
+.modal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-  /* ── empty ── */
-  .empty { text-align: center; padding: 70px 20px; color: var(--text3); }
-  .empty-icon { font-size: 36px; margin-bottom: 14px; opacity: .35; }
-  .empty-title {
-    font-family: 'Noto Sans KR', sans-serif; font-size: 17px;
-    font-weight: 300; color: var(--text2); margin-bottom: 6px;
-  }
-  .empty-desc { font-size: 13px; }
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:500;color:var(--text)}
 
-  /* ── overlay / modal ── */
-  .overlay {
-    position: fixed; inset: 0; background: rgba(20,15,40,0.45);
-    display: flex; align-items: flex-start; justify-content: center;
-    z-index: 200; padding: 40px 20px; overflow-y: auto;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  .overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; width: 100%; max-width: 520px;
-    padding: 28px; overflow-y: visible;
-    transform: translateY(12px); transition: transform 0.22s;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-  }
-  .overlay.open .modal { transform: translateY(0); }
-  .modal::-webkit-scrollbar { width: 4px; }
-  .modal::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+.field{margin-bottom:15px}
+.field-label{font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:6px}
+.field input[type=text],.field input[type=date],.field select{
+  width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);
+  color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:300;font-size:14px;
+  padding:9px 13px;outline:none;transition:border-color .12s
+}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field input::placeholder{color:var(--text3)}
+.field input[type=date]::-webkit-calendar-picker-indicator{filter:opacity(.4)}
+.field select{
+  cursor:pointer;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b94b3' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;background-color:var(--surface2)
+}
 
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
-  .modal-title { font-family: 'Noto Sans KR', sans-serif; font-size: 17px; font-weight: 300; }
+.tag-input-wrap{
+  display:flex;flex-wrap:wrap;gap:5px;background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--r);padding:7px 9px;cursor:text;min-height:40px;align-items:center;
+  transition:border-color .12s
+}
+.tag-input-wrap:focus-within{border-color:var(--accent)}
+.tag-chip{
+  background:var(--accent-dim);color:var(--accent);border-radius:20px;
+  font-size:11.5px;padding:2px 9px;display:flex;align-items:center;gap:4px
+}
+.tag-x{cursor:pointer;opacity:.6;font-size:13px;line-height:1}
+.tag-x:hover{opacity:1}
+.chip-input{
+  background:none;border:none;outline:none;color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;font-weight:300;font-size:13px;min-width:80px;flex:1
+}
+.chip-input::placeholder{color:var(--text3)}
 
-  .field { margin-bottom: 16px; }
-  .field-label {
-    font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
-    color: var(--text3); text-transform: uppercase; margin-bottom: 7px;
-  }
-  .field input[type="text"],
-  .field input[type="date"],
-  .field select {
-    width: 100%; background: var(--surface2);
-    border: 0.5px solid var(--border2); border-radius: var(--radius);
-    color: var(--text); font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 300; font-size: 14px; padding: 10px 14px;
-    outline: none; transition: border-color 0.15s;
-  }
-  .field select {
-    cursor: pointer; appearance: none; -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a099b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 12px center;
-    background-color: var(--surface2);
-  }
-  .field input:focus, .field select:focus { border-color: var(--accent); }
-  .field input::placeholder { color: var(--text3); }
-  .field input[type="date"]::-webkit-calendar-picker-indicator { filter: opacity(0.4); }
+/* 그룹 드롭다운 */
+.group-field-wrap{position:relative}
+.group-dropdown{
+  position:absolute;top:calc(100% + 3px);left:0;right:0;
+  background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);
+  box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:50;display:none;overflow:hidden
+}
+.group-dropdown.open{display:block}
+.group-option{
+  padding:9px 13px;font-size:13px;color:var(--text2);cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;font-weight:300;transition:background .1s
+}
+.group-option:hover{background:var(--surface2)}
+.group-option.new-option{color:var(--accent);border-top:1px solid var(--border)}
 
-  /* chips */
-  .tag-input-wrap {
-    display: flex; flex-wrap: wrap; gap: 6px;
-    background: var(--surface2); border: 0.5px solid var(--border2);
-    border-radius: var(--radius); padding: 8px 10px;
-    cursor: text; min-height: 42px; align-items: center;
-    transition: border-color 0.15s;
-  }
-  .tag-input-wrap:focus-within { border-color: var(--accent); }
-  .tag-chip {
-    background: var(--accent-dim); color: var(--accent);
-    border-radius: 20px; font-size: 12px; padding: 2px 10px;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .tag-x { cursor: pointer; opacity: .6; font-size: 14px; line-height: 1; }
-  .tag-x:hover { opacity: 1; }
-  .chip-input {
-    background: none; border: none; outline: none;
-    color: var(--text); font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 300; font-size: 14px; min-width: 80px; flex: 1;
-  }
-  .chip-input::placeholder { color: var(--text3); }
+/* 관계 */
+.relation-list{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.relation-row{
+  display:flex;align-items:center;gap:7px;background:var(--surface2);
+  border-radius:7px;padding:6px 9px;font-size:13px
+}
+.relation-name{flex:1;color:var(--text2)}
+.relation-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;line-height:1;padding:0 2px;transition:color .12s}
+.relation-del:hover{color:var(--red)}
+.relation-add-wrap{margin-top:5px}
+.relation-type-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+.rel-type-btn{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:20px;
+  font-size:12px;padding:4px 11px;cursor:pointer;color:var(--text2);
+  font-family:'Noto Sans KR',sans-serif;transition:background .1s,border-color .1s;display:flex;align-items:center;gap:4px
+}
+.rel-type-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.rel-person-wrap{display:flex;gap:5px;align-items:flex-start;flex-wrap:wrap}
+.rel-person-search{flex:1;min-width:150px;position:relative}
+.rel-person-search input{
+  width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;
+  color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:300;font-size:13px;
+  padding:7px 11px;outline:none;transition:border-color .12s
+}
+.rel-person-search input:focus{border-color:var(--accent)}
+.rel-person-dropdown{
+  position:absolute;top:calc(100% + 3px);left:0;right:0;
+  background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:60;display:none;overflow:hidden
+}
+.rel-person-dropdown.open{display:block}
+.rel-person-opt{
+  padding:7px 11px;font-size:13px;color:var(--text2);cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;font-weight:300;transition:background .1s
+}
+.rel-person-opt:hover{background:var(--surface2)}
+.rel-add-confirm{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:7px;
+  color:var(--text2);font-family:'Noto Sans KR',sans-serif;font-size:13px;
+  padding:7px 13px;cursor:pointer;white-space:nowrap;transition:border-color .12s,color .12s
+}
+.rel-add-confirm:hover{border-color:var(--accent);color:var(--accent)}
 
-  /* memo */
-  .memo-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .memo-add-btn {
-    background: none; border: 0.5px dashed var(--border2);
-    border-radius: 8px; color: var(--text3); font-size: 12px;
-    font-family: 'Noto Sans KR', sans-serif; padding: 4px 12px;
-    cursor: pointer; transition: color 0.15s, border-color 0.15s;
-  }
-  .memo-add-btn:hover { color: var(--accent); border-color: var(--accent-dim2); }
-  .memo-block {
-    background: var(--surface2); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px;
-  }
-  .memo-block-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .memo-title-input {
-    background: none; border: none; outline: none; color: var(--accent);
-    font-family: 'Noto Sans KR', sans-serif; font-weight: 300; font-size: 12px;
-    letter-spacing: 0.04em; flex: 1;
-  }
-  .memo-title-input::placeholder { color: var(--text3); }
-  .memo-body {
-    background: none; border: none; outline: none; color: var(--text2);
-    font-family: 'Noto Sans KR', sans-serif; font-weight: 300; font-size: 13.5px;
-    line-height: 1.7; width: 100%; resize: none; min-height: 60px;
-  }
-  .memo-body::placeholder { color: var(--text3); }
+/* 메모 */
+.memo-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.memo-add-btn{
+  background:none;border:1px dashed var(--border2);border-radius:7px;color:var(--text3);
+  font-size:11.5px;font-family:'Noto Sans KR',sans-serif;padding:4px 11px;cursor:pointer;
+  transition:color .12s,border-color .12s
+}
+.memo-add-btn:hover{color:var(--accent);border-color:var(--accent-dim2)}
+.memo-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:7px}
+.memo-block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.memo-title-input{
+  background:none;border:none;outline:none;color:var(--accent);
+  font-family:'Noto Sans KR',sans-serif;font-weight:300;font-size:11.5px;letter-spacing:.04em;flex:1
+}
+.memo-title-input::placeholder{color:var(--text3)}
+.memo-body{
+  background:none;border:none;outline:none;color:var(--text2);
+  font-family:'Noto Sans KR',sans-serif;font-weight:300;font-size:13px;
+  line-height:1.7;width:100%;resize:none;min-height:56px
+}
+.memo-body::placeholder{color:var(--text3)}
 
-  .modal-footer {
-    display: flex; justify-content: flex-end; gap: 8px;
-    margin-top: 22px; padding-top: 18px; border-top: 0.5px solid var(--border);
-  }
-  .btn-cancel {
-    background: none; border: 0.5px solid var(--border2); border-radius: var(--radius);
-    color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px; font-weight: 300; padding: 9px 18px; cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .btn-cancel:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-save {
-    background: var(--accent); border: none; border-radius: var(--radius);
-    color: #fff; font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px; font-weight: 400; padding: 9px 22px; cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn-save:hover { opacity: 0.88; }
+.modal-footer{display:flex;justify-content:flex-end;gap:7px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.btn-cancel{
+  background:none;border:1px solid var(--border2);border-radius:var(--r);
+  color:var(--text2);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:300;
+  padding:8px 16px;cursor:pointer;transition:border-color .12s
+}
+.btn-cancel:hover{border-color:var(--accent);color:var(--accent)}
+.btn-save{
+  background:var(--accent);border:none;border-radius:var(--r);color:#fff;
+  font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;
+  padding:8px 20px;cursor:pointer;transition:opacity .12s
+}
+.btn-save:hover{opacity:.88}
 
-  /* detail modal */
-  .detail-name {
-    font-family: 'Noto Sans KR', sans-serif; font-size: 22px;
-    font-weight: 300; letter-spacing: -0.02em; margin-bottom: 5px;
-  }
-  .detail-meta { font-size: 13px; color: var(--text3); margin-bottom: 12px; }
-  .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
-  .detail-memo { margin-bottom: 14px; border-top: 0.5px solid var(--border); padding-top: 14px; }
-  .detail-memo-label {
-    font-size: 11px; letter-spacing: 0.08em; color: var(--accent);
-    text-transform: uppercase; margin-bottom: 5px;
-  }
-  .detail-memo-body { font-size: 14px; color: var(--text2); line-height: 1.75; white-space: pre-wrap; }
-  .detail-edit-btn {
-    display: inline-flex; align-items: center; gap: 6px; margin-top: 18px;
-    background: none; border: 0.5px solid var(--border2); border-radius: var(--radius);
-    color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px; padding: 8px 16px; cursor: pointer; transition: border-color 0.15s, color 0.15s;
-  }
-  .detail-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+/* 상세 */
+.detail-name{font-size:20px;font-weight:700;letter-spacing:-0.03em;margin-bottom:4px}
+.detail-meta{font-size:12.5px;color:var(--text3);margin-bottom:10px}
+.detail-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.detail-memo{margin-bottom:12px;border-top:1px solid var(--border);padding-top:12px}
+.detail-memo-label{font-size:10.5px;letter-spacing:.08em;color:var(--accent);text-transform:uppercase;margin-bottom:4px}
+.detail-memo-body{font-size:13.5px;color:var(--text2);line-height:1.75;white-space:pre-wrap}
+.detail-edit-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  background:none;border:1px solid var(--border2);border-radius:var(--r);
+  color:var(--text2);font-family:'Noto Sans KR',sans-serif;font-size:12.5px;
+  padding:7px 14px;cursor:pointer;transition:border-color .12s,color .12s
+}
+.detail-edit-btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-end-relation,.btn-restore-relation{
+  display:inline-flex;align-items:center;gap:5px;
+  background:none;border:1px solid var(--border2);border-radius:var(--r);
+  font-family:'Noto Sans KR',sans-serif;font-size:12.5px;
+  padding:7px 14px;cursor:pointer;transition:border-color .12s,color .12s
+}
+.btn-end-relation{color:var(--text3)}.btn-end-relation:hover{color:var(--red);border-color:var(--red)}
+.btn-restore-relation{color:var(--text3)}.btn-restore-relation:hover{color:var(--accent);border-color:var(--accent)}
 
-  /* ── group dropdown ── */
-  .group-field-wrap { position: relative; }
-  .group-dropdown {
-    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-    background: var(--surface); border: 0.5px solid var(--border2);
-    border-radius: var(--radius); box-shadow: 0 4px 20px rgba(80,60,140,0.10);
-    z-index: 50; display: none; overflow: hidden;
-  }
-  .group-dropdown.open { display: block; }
-  .group-option {
-    padding: 10px 14px; font-size: 13.5px; color: var(--text2);
-    cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
-    transition: background 0.1s;
-  }
-  .group-option:hover { background: var(--surface2); color: var(--text); }
-  .group-option.new-option { color: var(--accent); border-top: 0.5px solid var(--border); }
-  .group-option.new-option:first-child { border-top: none; }
+/* ── 사진 갤러리 ── */
+.photo-section{margin-top:20px;border-top:1px solid var(--border);padding-top:16px}
+.photo-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.photo-section-title{font-size:12px;font-weight:500;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
+.photo-section-actions{display:flex;gap:6px;align-items:center}
+.photo-upload-btn{
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  background:none;border:1px solid var(--border2);border-radius:6px;
+  color:var(--text3);font-family:'Noto Sans KR',sans-serif;font-size:11.5px;
+  padding:4px 10px;transition:color .12s,border-color .12s
+}
+.photo-upload-btn:hover{color:var(--accent);border-color:var(--accent)}
+.photo-batch-action{
+  display:none;align-items:center;gap:6px;font-size:11.5px;
+  background:none;border:1px solid var(--border2);border-radius:6px;
+  color:var(--text3);font-family:'Noto Sans KR',sans-serif;
+  padding:4px 10px;cursor:pointer;transition:color .12s,border-color .12s
+}
+.photo-batch-action.show{display:inline-flex}
+.photo-batch-action.del:hover{color:var(--red);border-color:var(--red)}
 
-  /* ── 종료 관계 ── */
-  .view-tabs {
-    display: flex; gap: 0; margin-bottom: 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .view-tab {
-    background: none; border: none; color: var(--text3);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 13.5px; font-weight: 300;
-    padding: 10px 22px; cursor: pointer;
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
-  .view-tab.ended-tab.active { color: var(--text2); border-bottom-color: var(--text2); }
-  .view-tab:hover:not(.active) { color: var(--text2); }
+.photo-date-group{margin-bottom:20px}
+.photo-date-label{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--text3);margin-bottom:8px;font-weight:400
+}
+.photo-date-label span{font-weight:500;color:var(--text2);font-size:13px}
+.date-check-all{
+  width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0
+}
 
-  .ended-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 500; min-width: 18px; height: 18px;
-    background: var(--surface3); color: var(--text3);
-    border-radius: 20px; padding: 0 6px; letter-spacing: 0;
-    vertical-align: middle; margin-left: 6px;
-  }
-  .person-card.ended {
-    opacity: 0.65; border-style: dashed;
-  }
-  .btn-end-relation {
-    background: none; border: 0.5px solid var(--border2);
-    border-radius: var(--radius); color: var(--text3);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
-    padding: 6px 14px; cursor: pointer; margin-top: 14px; display: inline-flex;
-    align-items: center; gap: 5px; transition: color 0.15s, border-color 0.15s;
-  }
-  .btn-end-relation:hover { color: var(--red); border-color: var(--red); }
-  .btn-restore-relation {
-    background: none; border: 0.5px solid var(--border2);
-    border-radius: var(--radius); color: var(--text3);
-    font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 300;
-    padding: 6px 14px; cursor: pointer; margin-top: 14px; display: inline-flex;
-    align-items: center; gap: 5px; transition: color 0.15s, border-color 0.15s;
-  }
-  .btn-restore-relation:hover { color: var(--accent); border-color: var(--accent); }
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.photo-thumb{
+  border-radius:9px;overflow:hidden;cursor:pointer;position:relative;
+  background:var(--surface2);border:2px solid transparent;transition:border-color .12s;
+  aspect-ratio:4/3
+}
+.photo-thumb.selected{border-color:var(--accent)}
+.photo-thumb img{width:100%;height:100%;object-fit:contain;display:block;background:#f0eef8}
+.photo-check{
+  position:absolute;top:7px;left:7px;
+  width:18px;height:18px;accent-color:var(--accent);cursor:pointer;
+  opacity:0;transition:opacity .12s;z-index:2
+}
+.photo-thumb:hover .photo-check,.photo-thumb.selected .photo-check{opacity:1}
+.photo-thumb-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.28);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  opacity:0;transition:opacity .15s
+}
+.photo-thumb:hover .photo-thumb-overlay{opacity:1}
+.photo-thumb.selected .photo-thumb-overlay{opacity:1;background:rgba(92,63,181,.15)}
+.photo-thumb-action{
+  background:rgba(255,255,255,.92);border:none;border-radius:50%;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:14px
+}
+.photo-uploading{font-size:12px;color:var(--accent);padding:8px 0;display:none;align-items:center;gap:6px}
+.photo-uploading.show{display:flex}
 
-  /* 그룹뷰 종료 버튼 */
-  .group-end-btn {
-    font-size: 11px; color: var(--text3); background: none; border: none;
-    cursor: pointer; padding: 2px 8px; border-radius: 6px;
-    border: 0.5px solid var(--border2); margin-left: 8px;
-    font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .group-end-btn:hover { color: var(--red); border-color: var(--red); }
-  .group-restore-btn {
-    font-size: 11px; color: var(--text3); background: none; border: none;
-    cursor: pointer; padding: 2px 8px; border-radius: 6px;
-    border: 0.5px solid var(--border2); margin-left: 8px;
-    font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .group-restore-btn:hover { color: var(--accent); border-color: var(--accent); }
+/* 사진 뷰어 */
+.photo-viewer{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);
+  display:flex;align-items:center;justify-content:center;
+  z-index:300;opacity:0;pointer-events:none;transition:opacity .2s
+}
+.photo-viewer.open{opacity:1;pointer-events:all}
+.photo-viewer img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:5px}
+.viewer-close{
+  position:absolute;top:18px;right:22px;background:rgba(255,255,255,.15);
+  border:none;border-radius:50%;width:34px;height:34px;color:#fff;font-size:17px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center
+}
+.viewer-download{
+  position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  border-radius:8px;color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13px;
+  padding:8px 18px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .12s
+}
+.viewer-download:hover{background:rgba(255,255,255,.25)}
+.viewer-nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:rgba(255,255,255,.12);border:none;border-radius:50%;
+  width:38px;height:38px;color:#fff;font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .12s
+}
+.viewer-nav:hover{background:rgba(255,255,255,.24)}
+.viewer-prev{left:18px}.viewer-next{right:18px}
+.viewer-info{position:absolute;top:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:12px}
 
-  /* ── 관계 (겹지인/커플) ── */
-  .relation-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
-  .relation-row {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface2); border-radius: 8px; padding: 7px 10px;
-    font-size: 13px;
-  }
-  .relation-emoji { font-size: 15px; flex-shrink: 0; }
-  .relation-name { flex: 1; color: var(--text2); font-weight: 400; cursor: pointer; }
-  .relation-name:hover { color: var(--accent); text-decoration: underline; }
-  .relation-del {
-    background: none; border: none; cursor: pointer; color: var(--text3);
-    font-size: 16px; line-height: 1; padding: 0 2px;
-    transition: color 0.12s;
-  }
-  .relation-del:hover { color: var(--red); }
-
-  /* 관계 추가 UI */
-  .relation-add-wrap { margin-top: 6px; }
-  .relation-type-row {
-    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;
-  }
-  .rel-type-btn {
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 20px; font-size: 13px; padding: 4px 12px;
-    cursor: pointer; color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
-    transition: background 0.12s, border-color 0.12s;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .rel-type-btn.active {
-    background: var(--accent-dim); border-color: var(--accent); color: var(--accent);
-  }
-  .rel-person-wrap {
-    display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap;
-  }
-  .rel-person-search {
-    flex: 1; min-width: 160px; position: relative;
-  }
-  .rel-person-search input {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 8px; color: var(--text); font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 300; font-size: 13px; padding: 7px 12px; outline: none;
-    transition: border-color 0.12s;
-  }
-  .rel-person-search input:focus { border-color: var(--accent); }
-  .rel-person-dropdown {
-    position: absolute; top: calc(100% + 3px); left: 0; right: 0;
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-    z-index: 60; display: none; overflow: hidden;
-  }
-  .rel-person-dropdown.open { display: block; }
-  .rel-person-opt {
-    padding: 8px 12px; font-size: 13px; color: var(--text2);
-    cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-weight: 300;
-    transition: background 0.1s;
-  }
-  .rel-person-opt:hover { background: var(--surface2); color: var(--text); }
-  .rel-add-confirm {
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 8px; color: var(--text2); font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px; padding: 7px 14px; cursor: pointer; white-space: nowrap;
-    transition: border-color 0.12s, color 0.12s;
-  }
-  .rel-add-confirm:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* 카드/상세 관계 표시 */
-  .card-relations { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
-  .relation-chip {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: var(--surface2); border-radius: 20px;
-    font-size: 12px; padding: 2px 9px; color: var(--text2);
-  }
-
-  /* ── 사진 갤러리 ── */
-  .photo-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
-  .photo-section-head {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
-  }
-  .photo-section-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.07em; text-transform: uppercase; }
-  .photo-upload-btn {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: none; border: 1px solid var(--border2); border-radius: 6px;
-    color: var(--text3); font-family: 'Noto Sans KR', sans-serif;
-    font-size: 12px; padding: 4px 10px; cursor: pointer;
-    transition: color 0.12s, border-color 0.12s;
-  }
-  .photo-upload-btn:hover { color: var(--accent); border-color: var(--accent); }
-
-  .photo-date-group { margin-bottom: 18px; }
-  .photo-date-label {
-    font-size: 11px; color: var(--text3); margin-bottom: 8px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .photo-date-label span { font-weight: 500; color: var(--text2); }
-  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
-  .photo-thumb {
-    aspect-ratio: 4/3; border-radius: 8px; overflow: hidden;
-    cursor: pointer; position: relative; background: var(--surface2);
-  }
-  .photo-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; background: #f0eef8; }
-  .photo-thumb:hover .photo-thumb-overlay { opacity: 1; }
-  .photo-thumb-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.35);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.15s; gap: 8px;
-  }
-  .photo-thumb-action {
-    background: rgba(255,255,255,0.9); border: none; border-radius: 50%;
-    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 13px;
-  }
-
-  /* 사진 뷰어 */
-  .photo-viewer {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.88);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  .photo-viewer.open { opacity: 1; pointer-events: all; }
-  .photo-viewer img {
-    max-width: 92vw; max-height: 88vh; object-fit: contain;
-    border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-  }
-  .viewer-close {
-    position: absolute; top: 20px; right: 24px;
-    background: rgba(255,255,255,0.15); border: none; border-radius: 50%;
-    width: 36px; height: 36px; color: #fff; font-size: 18px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .viewer-download {
-    position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 8px; color: #fff; font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px; padding: 8px 20px; cursor: pointer;
-    display: flex; align-items: center; gap: 8px;
-    transition: background 0.15s;
-  }
-  .viewer-download:hover { background: rgba(255,255,255,0.25); }
-  .viewer-nav {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
-    width: 40px; height: 40px; color: #fff; font-size: 20px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-  }
-  .viewer-nav:hover { background: rgba(255,255,255,0.25); }
-  .viewer-prev { left: 20px; }
-  .viewer-next { right: 20px; }
-
-  .photo-uploading {
-    font-size: 12px; color: var(--accent); padding: 8px 0;
-    display: none; align-items: center; gap: 6px;
-  }
-  .photo-uploading.show { display: flex; }
-
-  /* 설정 모달에 레포 필드 */
-  .repo-field-note { font-size: 11px; color: var(--text3); margin-top: 5px; }
-
-  .photo-batch-del {
-    background: none; border: 1px solid var(--border2); border-radius: 6px;
-    color: var(--text3); font-family: 'Noto Sans KR', sans-serif;
-    font-size: 11px; padding: 3px 9px; cursor: pointer; margin-left: 8px;
-    transition: color 0.12s, border-color 0.12s;
-  }
-  .photo-batch-del:hover { color: var(--red); border-color: var(--red); }
+/* sync modal */
+.repo-field-note{font-size:11px;color:var(--text3);margin-top:4px}
 </style>
 </head>
 <body>
-<div class="shell">
+<div class="wrap">
   <header class="site-header">
-    <h1 class="site-title">관계 노트</h1>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span id="sync-status" style="font-size:12px;color:var(--text3);letter-spacing:0.04em"></span>
-      <p class="header-meta" id="today-label"></p>
+    <h1 class="site-title">관계 <em>노트</em></h1>
+    <div class="header-right">
+      <span class="sync-badge" id="sync-status"></span>
+      <span class="today-label" id="today-label"></span>
     </div>
   </header>
 
@@ -602,22 +461,22 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="search" placeholder="이름, 태그, 그룹, MBTI로 검색">
     </div>
-    <button class="toolbar-btn primary" onclick="openForm()">
+    <button class="btn-add" onclick="openForm()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       새 사람
     </button>
   </div>
   <div class="toolbar-sub">
     <button class="sub-btn" onclick="openSyncModal()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
       Gist 동기화 설정
     </button>
     <button class="sub-btn" onclick="gistSave()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
       업로드
     </button>
     <button class="sub-btn" onclick="gistLoad()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
       다운로드
     </button>
     <span class="sub-divider"></span>
@@ -628,18 +487,16 @@
 
   <div class="view-tabs">
     <button class="view-tab active" id="vtab-active" onclick="setView('active',this)">목록</button>
-    <button class="view-tab ended-tab" id="vtab-ended" onclick="setView('ended',this)">종료 <span class="ended-badge" id="ended-count">0</span></button>
+    <button class="view-tab" id="vtab-ended" onclick="setView('ended',this)">종료 <span class="ended-badge" id="ended-count">0</span></button>
   </div>
-
   <div id="sort-tabs-wrap">
-    <div class="sort-tabs" style="border-bottom:none;padding-top:12px;margin-bottom:8px">
+    <div class="sort-wrap">
       <button class="sort-tab active" onclick="setSort('name',this)">이름순</button>
       <button class="sort-tab" onclick="setSort('bday',this)">생일순</button>
       <button class="sort-tab" onclick="setSort('recent',this)">최근 추가순</button>
       <button class="sort-tab" onclick="setSort('group',this)">그룹별</button>
     </div>
   </div>
-
   <p class="count-line" id="count-line"></p>
   <div class="card-grid" id="card-grid"></div>
 </div>
@@ -649,9 +506,7 @@
   <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-header">
       <span class="modal-title" id="form-title">새 사람</span>
-      <button class="icon-btn" onclick="closeForm()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
+      <button class="icon-btn" onclick="closeForm()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="field">
       <div class="field-label">이름</div>
@@ -695,8 +550,7 @@
         </div>
         <div class="rel-person-wrap" id="rel-person-wrap" style="display:none">
           <div class="rel-person-search">
-            <input type="text" id="rel-search" placeholder="이름 검색 또는 직접 입력…" autocomplete="off"
-              oninput="showRelDropdown()" onfocus="showRelDropdown()">
+            <input type="text" id="rel-search" placeholder="이름 검색 또는 직접 입력…" autocomplete="off" oninput="showRelDropdown()" onfocus="showRelDropdown()">
             <div class="rel-person-dropdown" id="rel-dropdown"></div>
           </div>
           <button type="button" class="rel-add-confirm" onclick="confirmAddRelation()">추가</button>
@@ -704,7 +558,7 @@
       </div>
     </div>
     <div class="field">
-      <div class="field-label">태그 <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:4px">Enter로 추가</span></div>
+      <div class="field-label">태그 <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:3px">Enter로 추가</span></div>
       <div class="tag-input-wrap" id="tag-wrap" onclick="document.getElementById('tag-field').focus()">
         <input type="text" id="tag-field" class="chip-input" placeholder="키워드, 특징…">
       </div>
@@ -728,7 +582,50 @@
   <div class="modal" id="detail-body" role="dialog" aria-modal="true"></div>
 </div>
 
+<!-- sync modal -->
+<div class="overlay" id="sync-overlay" onclick="if(event.target===this)closeSyncModal()">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <span class="modal-title">GitHub Gist 동기화</span>
+      <button class="icon-btn" onclick="closeSyncModal()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:18px">GitHub Personal Access Token(gist + repo 권한)을 입력하면 데이터가 자동 저장돼요.</p>
+    <div class="field">
+      <div class="field-label">GitHub Token</div>
+      <input type="password" id="sync-token" placeholder="ghp_xxxxxxxxxxxxxx">
+    </div>
+    <div class="field">
+      <div class="field-label">Gist ID <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:3px">처음이면 비워두세요</span></div>
+      <input type="text" id="sync-gist-id" placeholder="자동 생성">
+    </div>
+    <div class="field">
+      <div class="field-label">사진 저장 레포 <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:3px">유저명/레포명</span></div>
+      <input type="text" id="sync-repo" placeholder="예: username/circles-photos">
+      <p class="repo-field-note">GitHub 레포지토리에 사진을 원본 그대로 저장해요.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeSyncModal()">취소</button>
+      <button class="btn-cancel" onclick="testSync()" id="test-btn">연결 테스트</button>
+      <button class="btn-save" onclick="saveSyncSettings()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- photo viewer -->
+<div class="photo-viewer" id="photo-viewer">
+  <button class="viewer-close" onclick="closeViewer()">✕</button>
+  <div class="viewer-info" id="viewer-info"></div>
+  <button class="viewer-nav viewer-prev" onclick="viewerNav(-1)">‹</button>
+  <img id="viewer-img" src="" alt="">
+  <button class="viewer-nav viewer-next" onclick="viewerNav(1)">›</button>
+  <button class="viewer-download" onclick="viewerDownload()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    원본 다운로드
+  </button>
+</div>
+
 <script>
+
 let GITHUB_TOKEN = localStorage.getItem('circles_token') || '';
 const GIST_FILENAME = 'circles-data.json';
 let gistId = localStorage.getItem('circles_gist_id') || null;
@@ -1068,11 +965,14 @@ function openDetail(id) {
     '<div class="photo-section">' +
     '<div class="photo-section-head">' +
     '<span class="photo-section-title">대화 사진</span>' +
+    '<div class="photo-section-actions">' +
+    '<button class="photo-batch-action del" id="batch-del-' + id + '" onclick="batchDeleteSelected(\''+id+'\')">' +
+    '<span id="batch-count-' + id + '">0장 삭제</span></button>' +
     '<label class="photo-upload-btn" style="cursor:pointer">' +
     '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>' +
     ' 사진 추가' +
     '<input type="file" accept="image/*" multiple style="display:none" data-pid="' + id + '" onchange="uploadPhotos(this.dataset.pid, this.files)">' +
-    '</label></div>' +
+    '</label></div></div>' +
     '<div class="photo-uploading" id="photo-upload-status-' + id + '">⏳ 업로드 중…</div>' +
     '<div id="photo-section-' + id + '" style="margin-top:8px">불러오는 중…</div>' +
     '</div>';
@@ -1540,35 +1440,6 @@ async function loadPhotoUrls(personId) {
 }
 
 
-async function batchDeleteByDate(personId, date) {
-  const p = people.find(x => x.id === personId);
-  if (!p) return;
-  const targets = (p.photos||[]).filter(x => x.date === date);
-  if (!targets.length) return;
-  if (!confirm(date + ' 사진 ' + targets.length + '장을 모두 삭제할까요?')) return;
-
-  const repo = getRepo();
-  for (const photo of targets) {
-    if (repo && GITHUB_TOKEN) {
-      try {
-        const chk = await fetch('https://api.github.com/repos/' + repo + '/contents/' + photo.path, {
-          headers: { Authorization: 'token ' + GITHUB_TOKEN }
-        });
-        if (chk.ok) {
-          const d = await chk.json();
-          await fetch('https://api.github.com/repos/' + repo + '/contents/' + photo.path, {
-            method: 'DELETE',
-            headers: { Authorization: 'token ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'Delete photo: ' + photo.name, sha: d.sha })
-          });
-        }
-      } catch(e) { console.error(e); }
-    }
-  }
-  p.photos = (p.photos||[]).filter(x => x.date !== date);
-  persist();
-  openDetail(personId);
-}
 
 // 사진 삭제
 async function deletePhoto(personId, path, name) {
@@ -1604,57 +1475,131 @@ async function renderPhotoSection(personId) {
   const urlMap = await loadPhotoUrls(personId);
   const dates = Object.keys(urlMap).sort().reverse();
 
-  if (!dates.length) {
-    el.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:4px 0">사진이 없어요</p>';
-    return;
-  }
-
-  // 캐시 먼저 저장
+  // 캐시 저장
   window._photoCache = window._photoCache || {};
   window._photoCache[personId] = urlMap;
 
+  if (!dates.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:4px 0">사진이 없어요</p>';
+    updateBatchButtons(personId);
+    return;
+  }
+
   let html = '';
-  dates.forEach((date, di) => {
+  dates.forEach(date => {
     const photos = urlMap[date];
-    html += '<div class="photo-date-group">';
-    html += '<div class="photo-date-label"><span>' + date + '</span> · ' + photos.length + '장' +
-      '<button class="photo-batch-del" data-bpid="' + personId + '" data-bdate="' + date + '">날짜 전체 삭제</button></div>';
+    html += '<div class="photo-date-group" data-date="' + date + '">';
+    html += '<div class="photo-date-label">' +
+      '<input type="checkbox" class="date-check-all" data-date="' + date + '" title="이 날짜 전체 선택">' +
+      '<span>' + date + '</span> · ' + photos.length + '장</div>';
     html += '<div class="photo-grid">';
     photos.forEach((photo, i) => {
-      // data 속성으로 전달해서 onclick 따옴표 충돌 완전 제거
       html += '<div class="photo-thumb" data-pid="' + personId + '" data-date="' + date + '" data-idx="' + i + '" data-path="' + encodeURIComponent(photo.path) + '" data-name="' + encodeURIComponent(photo.name) + '">' +
-        '<img src="' + photo.url + '" loading="lazy" alt="' + encodeURIComponent(photo.name) + '">' +
+        '<img src="' + photo.url + '" loading="lazy" alt="">' +
+        '<input type="checkbox" class="photo-check" title="선택">' +
         '<div class="photo-thumb-overlay">' +
-        '<button class="photo-thumb-action thumb-view" title="보기">👁</button>' +
-        '<button class="photo-thumb-action thumb-del" title="삭제">🗑</button>' +
+        '<button class="photo-thumb-action thumb-view" title="크게 보기">👁</button>' +
         '</div></div>';
     });
     html += '</div></div>';
   });
   el.innerHTML = html;
 
-  // 이벤트 위임으로 클릭 처리
-  el.addEventListener('click', function handler(e) {
-    const viewBtn = e.target.closest('.thumb-view');
-    const delBtn = e.target.closest('.thumb-del');
-    if (!viewBtn && !delBtn) return;
-    const thumb = e.target.closest('.photo-thumb');
-    if (!thumb) return;
-    const pid = thumb.dataset.pid;
-    const date = thumb.dataset.date;
-    const idx = parseInt(thumb.dataset.idx);
-    const path = decodeURIComponent(thumb.dataset.path);
-    const name = decodeURIComponent(thumb.dataset.name);
-    if (viewBtn) openViewer(pid, date, idx);
-    if (delBtn) deletePhoto(pid, path, name);
+  // 날짜 전체선택 체크박스
+  el.querySelectorAll('.date-check-all').forEach(cb => {
+    cb.addEventListener('change', function() {
+      const date = this.dataset.date;
+      const group = el.querySelector('.photo-date-group[data-date="' + date + '"]');
+      if (!group) return;
+      group.querySelectorAll('.photo-check').forEach(c => {
+        c.checked = this.checked;
+        c.closest('.photo-thumb').classList.toggle('selected', this.checked);
+      });
+      updateBatchButtons(personId);
+    });
+  });
 
-    const batchBtn = e.target.closest('.photo-batch-del');
-    if (batchBtn) {
-      const bpid = batchBtn.dataset.bpid;
-      const bdate = batchBtn.dataset.bdate;
-      batchDeleteByDate(bpid, bdate);
+  // 개별 체크박스
+  el.addEventListener('change', function(e) {
+    if (e.target.classList.contains('photo-check')) {
+      e.target.closest('.photo-thumb').classList.toggle('selected', e.target.checked);
+      // 날짜 전체선택 상태 동기화
+      const thumb = e.target.closest('.photo-thumb');
+      const date = thumb.dataset.date;
+      const group = el.querySelector('.photo-date-group[data-date="' + date + '"]');
+      if (group) {
+        const all = group.querySelectorAll('.photo-check');
+        const checked = group.querySelectorAll('.photo-check:checked');
+        const allCb = group.querySelector('.date-check-all');
+        if (allCb) allCb.checked = all.length === checked.length;
+      }
+      updateBatchButtons(personId);
     }
   });
+
+  // 클릭 (보기)
+  el.addEventListener('click', function(e) {
+    if (e.target.classList.contains('photo-check') || e.target.classList.contains('date-check-all')) return;
+    const viewBtn = e.target.closest('.thumb-view');
+    if (viewBtn) {
+      const thumb = viewBtn.closest('.photo-thumb');
+      openViewer(thumb.dataset.pid, thumb.dataset.date, parseInt(thumb.dataset.idx));
+    }
+    // 썸네일 클릭으로도 체크
+    const thumb = e.target.closest('.photo-thumb');
+    if (thumb && !viewBtn && !e.target.classList.contains('photo-thumb-action')) {
+      const cb = thumb.querySelector('.photo-check');
+      if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change', {bubbles:true})); }
+    }
+  });
+}
+
+function updateBatchButtons(personId) {
+  const el = document.getElementById('photo-section-' + personId);
+  if (!el) return;
+  const checked = el.querySelectorAll('.photo-check:checked');
+  const batchDel = document.getElementById('batch-del-' + personId);
+  const batchCount = document.getElementById('batch-count-' + personId);
+  if (batchDel) {
+    batchDel.classList.toggle('show', checked.length > 0);
+    if (batchCount) batchCount.textContent = checked.length + '장 삭제';
+  }
+}
+
+async function batchDeleteSelected(personId) {
+  const el = document.getElementById('photo-section-' + personId);
+  if (!el) return;
+  const checked = el.querySelectorAll('.photo-check:checked');
+  if (!checked.length) return;
+  if (!confirm(checked.length + '장을 삭제할까요?')) return;
+
+  const repo = getRepo();
+  const p = people.find(x => x.id === personId);
+  const toDelete = Array.from(checked).map(cb => {
+    const thumb = cb.closest('.photo-thumb');
+    return { path: decodeURIComponent(thumb.dataset.path), name: decodeURIComponent(thumb.dataset.name) };
+  });
+
+  for (const item of toDelete) {
+    if (repo && GITHUB_TOKEN) {
+      try {
+        const chk = await fetch('https://api.github.com/repos/' + repo + '/contents/' + item.path, {
+          headers: { Authorization: 'token ' + GITHUB_TOKEN }
+        });
+        if (chk.ok) {
+          const d = await chk.json();
+          await fetch('https://api.github.com/repos/' + repo + '/contents/' + item.path, {
+            method: 'DELETE',
+            headers: { Authorization: 'token ' + GITHUB_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'Delete: ' + item.name, sha: d.sha })
+          });
+        }
+      } catch(e) { console.error(e); }
+    }
+    if (p) p.photos = (p.photos||[]).filter(x => x.path !== item.path);
+  }
+  if (p) persist();
+  openDetail(personId);
 }
 
 // 뷰어
@@ -1717,51 +1662,7 @@ setTodayLabel();
 renderBdayBanner();
 renderList();
 gistLoad();
+
 </script>
-
-<!-- sync modal -->
-<div class="overlay" id="sync-overlay" onclick="if(event.target===this)closeSyncModal()">
-  <div class="modal" style="max-width:480px" role="dialog" aria-modal="true">
-    <div class="modal-header">
-      <span class="modal-title">GitHub Gist 동기화</span>
-      <button class="icon-btn" onclick="closeSyncModal()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px">
-      GitHub Personal Access Token(gist 권한)을 입력하면 데이터가 Gist에 자동 저장돼요.<br>어떤 기기/브라우저에서 열어도 동일한 데이터를 쓸 수 있어요.
-    </p>
-    <div class="field">
-      <div class="field-label">GitHub Token</div>
-      <input type="password" id="sync-token" placeholder="ghp_xxxxxxxxxxxxxx">
-    </div>
-    <div class="field">
-      <div class="field-label">Gist ID <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:4px">처음이면 비워두세요 — 자동 생성</span></div>
-      <input type="text" id="sync-gist-id" placeholder="자동 생성">
-    </div>
-    <div class="field">
-      <div class="field-label">사진 저장 레포 <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:10px;margin-left:4px">유저명/레포명</span></div>
-      <input type="text" id="sync-repo" placeholder="예: username/circles-photos">
-      <p class="repo-field-note">GitHub 레포지토리에 사진을 원본 그대로 저장해요. 없으면 GitHub에서 새 레포 만들고 입력하세요.</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeSyncModal()">취소</button>
-      <button class="btn-cancel" onclick="testSync()" id="test-btn">연결 테스트</button>
-      <button class="btn-save" onclick="saveSyncSettings()">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- photo viewer -->
-<div class="photo-viewer" id="photo-viewer">
-  <button class="viewer-close" onclick="closeViewer()">✕</button>
-  <button class="viewer-nav viewer-prev" onclick="viewerNav(-1)">‹</button>
-  <img id="viewer-img" src="" alt="">
-  <button class="viewer-nav viewer-next" onclick="viewerNav(1)">›</button>
-  <button class="viewer-download" onclick="viewerDownload()">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    원본 다운로드
-  </button>
-</div>
 </body>
 </html>
